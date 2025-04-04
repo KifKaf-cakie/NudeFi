@@ -26,39 +26,48 @@ export default function Header({ isConnected, address, connect, disconnect }) {
   return (
     <header 
       className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-gray-900 shadow-lg' : 'bg-transparent'
+        isScrolled ? 'bg-gray-900/95 backdrop-blur-sm shadow-lg' : 'bg-gradient-to-b from-black/80 to-transparent'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" legacyBehavior>
-            <a className="flex items-center">
-              <span className="text-pink-500 text-3xl font-bold mr-1">Nude</span>
-              <span className="text-white text-3xl font-bold">Fi</span>
+            <a className="flex items-center group">
+              <span className="text-pink-500 text-3xl font-bold mr-1 group-hover:text-pink-400 transition-colors">Nude</span>
+              <span className="text-white text-3xl font-bold group-hover:text-gray-200 transition-colors">Fi</span>
+              <span className="text-pink-500 ml-1 group-hover:scale-110 transition-transform">💋</span>
             </a>
           </Link>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/explore" legacyBehavior>
-              <a className={`text-lg ${router.pathname === '/explore' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}`}>
+              <a className={`text-lg relative ${router.pathname === '/explore' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'} 
+                after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                after:transition-all hover:after:w-full ${router.pathname === '/explore' ? 'after:w-full' : ''}`}>
                 Explore
               </a>
             </Link>
             <Link href="/market" legacyBehavior>
-              <a className={`text-lg ${router.pathname === '/market' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}`}>
+              <a className={`text-lg relative ${router.pathname === '/market' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
+                after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                after:transition-all hover:after:w-full ${router.pathname === '/market' ? 'after:w-full' : ''}`}>
                 Market
               </a>
             </Link>
             <Link href="/creators" legacyBehavior>
-              <a className={`text-lg ${router.pathname === '/creators' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}`}>
+              <a className={`text-lg relative ${router.pathname === '/creators' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
+                after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                after:transition-all hover:after:w-full ${router.pathname === '/creators' ? 'after:w-full' : ''}`}>
                 Creators
               </a>
             </Link>
             {isConnected && (
               <Link href="/dashboard" legacyBehavior>
-                <a className={`text-lg ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}`}>
+                <a className={`text-lg relative ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
+                  after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                  after:transition-all hover:after:w-full ${router.pathname === '/dashboard' ? 'after:w-full' : ''}`}>
                   Dashboard
                 </a>
               </Link>
@@ -70,9 +79,9 @@ export default function Header({ isConnected, address, connect, disconnect }) {
             {isConnected ? (
               <div className="flex items-center space-x-4">
                 <Link href="/profile" legacyBehavior>
-                  <a className="flex items-center bg-gray-800 hover:bg-gray-700 rounded-full px-4 py-2">
+                  <a className="flex items-center bg-gray-800 hover:bg-gray-700 rounded-full px-4 py-2 border border-pink-500/30 transition-all hover:border-pink-500/80">
                     <span className="text-white mr-2">{formatAddress(address)}</span>
-                    <div className="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center">
                       <span className="text-white text-sm font-bold">
                         {address?.substring(2, 4).toUpperCase()}
                       </span>
@@ -81,7 +90,7 @@ export default function Header({ isConnected, address, connect, disconnect }) {
                 </Link>
                 <button 
                   onClick={disconnect}
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm hidden lg:block"
+                  className="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-pink-500/50 text-white px-4 py-2 rounded-lg text-sm hidden lg:block transition-colors"
                 >
                   Disconnect
                 </button>
@@ -89,7 +98,7 @@ export default function Header({ isConnected, address, connect, disconnect }) {
             ) : (
               <button 
                 onClick={connect}
-                className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-lg"
+                className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-lg transition-all hover:shadow-lg hover:shadow-pink-500/20"
               >
                 Connect Wallet
               </button>
@@ -110,7 +119,7 @@ export default function Header({ isConnected, address, connect, disconnect }) {
       
       {/* Mobile Menu */}
       {showMobileMenu && (
-        <div className="md:hidden bg-gray-900 shadow-lg">
+        <div className="md:hidden bg-gray-900/95 backdrop-blur-sm shadow-lg border-t border-pink-500/20">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
               <Link href="/explore" legacyBehavior>
