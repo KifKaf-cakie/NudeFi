@@ -4,7 +4,7 @@ import Head from 'next/head';
 import Header from '../components/Header';
 import CreatorCard from '../components/CreatorCard';
 import TrendingContent from '../components/TrendingContent';
-import { fetchTrendingCreators } from '../services/creatorService';
+import { fetchTrendingCreators } from '../services/contentService';
 import { getAITrendPredictions } from '../services/aiService';
 import { ConnectKitButton } from 'connectkit';
 
