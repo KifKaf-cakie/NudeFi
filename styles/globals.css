@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 17, 24, 39;
+  --background-end-rgb: 17, 24, 39;
+  --accent-color: 219, 39, 119;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Customized form elements */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  @apply bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300;
+}
+
+.btn-secondary {
+  @apply bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300;
+}
+
+/* Card hover effect */
+.hover-scale {
+  @apply transition-transform duration-300;
+}
+
+.hover-scale:hover {
+  @apply transform scale-[1.02];
+}
+
+/* Age verification overlay */
+.age-verify-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col items-center justify-center p-6 text-center;
+}
+
+/* NFT badge */
+.nft-badge {
+  @apply absolute top-2 right-2 bg-pink-600 text-white text-xs font-bold px-2 py-1 rounded;
+}
+
+/* Creator coin tag */
+.coin-tag {
+  @apply inline-flex items-center bg-gray-700 px-2 py-1 rounded;
+}
+
+.coin-symbol {
+  @apply text-sm text-yellow-400 mr-1;
+}
+
+/* Progress bars */
+.progress-bar {
+  @apply w-full bg-gray-700 rounded-full h-4;
+}
+
+.progress-fill {
+  @apply bg-pink-600 h-4 rounded-full;
+}
