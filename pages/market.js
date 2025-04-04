@@ -41,7 +41,41 @@ export default function MarketPage() {
     loadData();
   }, [activeView]);
 
-  const sortedData = getSortedData();
+  const getSortedData = () => {
+  if (activeView === 'content') {
+    return [...trendingContent].sort((a, b) => {
+      switch (sortBy) {
+        case 'trending':
+          return b.trendScore - a.trendScore;
+        case 'popular':
+          return b.mintCount - a.mintCount;
+        case 'newest':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'price-asc':
+          return parseFloat(a.price) - parseFloat(b.price);
+        case 'price-desc':
+          return parseFloat(b.price) - parseFloat(a.price);
+        default:
+          return b.trendScore - a.trendScore;
+      }
+    });
+  } else {
+    return [...trendingCreators].sort((a, b) => {
+      switch (sortBy) {
+        case 'trending':
+          return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+        case 'marketcap':
+          return parseFloat(b.marketCap) - parseFloat(a.marketCap);
+        case 'followers':
+          return b.followers - a.followers;
+        case 'content':
+          return b.contentCount - a.contentCount;
+        default:
+          return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+      }
+    });
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
