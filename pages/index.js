@@ -1,19 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from '@wagmi/connectors';
+import { useAccount, useDisconnect } from 'wagmi';
 import Head from 'next/head';
 import Header from '../components/Header';
 import CreatorCard from '../components/CreatorCard';
 import TrendingContent from '../components/TrendingContent';
 import { fetchTrendingCreators } from '../services/creatorService';
 import { getAITrendPredictions } from '../services/aiService';
-
+import { ConnectKitButton } from 'connectkit';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
   const { disconnect } = useDisconnect();
   
   const [trendingCreators, setTrendingCreators] = useState([]);
@@ -50,7 +46,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
-      <Header isConnected={isConnected} address={address} connect={connect} disconnect={disconnect} />
+      <Header isConnected={isConnected} address={address} disconnect={disconnect} />
       
       <main className="container mx-auto px-4 py-8">
         <section className="mb-12">
@@ -59,17 +55,11 @@ export default function Home() {
             <p className="text-xl mb-8">
               Empowering creators with NFTs, community tokens, and fair earnings on the Base chain
             </p>
-            {!isConnected && (
-              <button 
-                onClick={() => connect()} 
-                className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg"
-              >
-                Connect Wallet to Get Started
-              </button>
-            )}
           </div>
         </section>
-        
+        <div className="flex justify-center">
+        <ConnectKitButton />
+        </div>
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-6 border-b border-gray-700 pb-2">AI Trend Predictions 🔮</h2>
           {isLoading ? (
