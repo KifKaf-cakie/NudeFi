@@ -1,11 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
 import { useState, useEffect } from 'react';
 import { WagmiConfig, createConfig } from 'wagmi';
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
 import { base } from 'viem/chains';
 import { setApiKey } from '@zoralabs/coins-sdk';
 import '../styles/globals.css';
+
+const useQueryClient = () => {
+  return useState(() => new QueryClient())[0];
+};
 
 // Configure wagmi client
 const config = createConfig(
@@ -25,6 +28,7 @@ const config = createConfig(
 );
 
 function MyApp({ Component, pageProps }) {
+  const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
   
   // Set up Zora API key
@@ -39,19 +43,21 @@ function MyApp({ Component, pageProps }) {
   if (!mounted) return null;
   
   return (
-    <WagmiConfig config={config}>
-      <ConnectKitProvider 
-        theme="midnight"
-        customTheme={{
-          "--ck-connectbutton-background": "#db2777",
-          "--ck-connectbutton-hover-background": "#be185d",
-          "--ck-primary-button-background": "#db2777",
-          "--ck-primary-button-hover-background": "#be185d",
-        }}
-      >
-        <Component {...pageProps} />
-      </ConnectKitProvider>
-    </WagmiConfig>
+      <QueryClientProvider client={queryClient}>
+      <WagmiConfig config={config}>
+        <ConnectKitProvider 
+          theme="midnight"
+          customTheme={{
+            "--ck-connectbutton-background": "#db2777",
+            "--ck-connectbutton-hover-background": "#be185d",
+            "--ck-primary-button-background": "#db2777",
+            "--ck-primary-button-hover-background": "#be185d",
+          }}
+        >
+          <Component {...pageProps} />
+        </ConnectKitProvider>
+      </WagmiConfig>
+    </QueryClientProvider>
   );
 }
 
