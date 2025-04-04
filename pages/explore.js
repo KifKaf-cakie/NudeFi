@@ -4,31 +4,23 @@ import Header from '../components/Header';
 import ContentList from '../components/ContentList';
 import { fetchTrendingContent } from '../services/contentService';
 import { getAITrendPredictions } from '../services/aiService';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from '@wagmi/connectors';
+import { useAccount, useDisconnect } from 'wagmi'; 
 
 export default function ExplorePage() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
-  const { disconnect } = useDisconnect();
-  
+  const { disconnect } = useDisconnect(); 
+
   const [trendingContent, setTrendingContent] = useState([]);
   const [trendPredictions, setTrendPredictions] = useState([]);
   const [activeCategory, setActiveCategory] = useState('trending');
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
-        
-        // Fetch trending content
         const content = await fetchTrendingContent(18);
         setTrendingContent(content);
-        
-        // Get AI trend predictions
         const predictions = await getAITrendPredictions();
         setTrendPredictions(predictions);
       } catch (error) {
@@ -37,36 +29,17 @@ export default function ExplorePage() {
         setIsLoading(false);
       }
     }
-    
     loadData();
   }, []);
-  
-  // Generate category-specific content
-  const getCategoryContent = () => {
-    // In a real implementation, we would fetch different content per category
-    // For now, just filter/sort the trending content differently
-    switch (activeCategory) {
-      case 'trending':
-        return trendingContent;
-      case 'recent':
-        return [...trendingContent].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      case 'popular':
-        return [...trendingContent].sort((a, b) => b.mintCount - a.mintCount);
-      case 'subscriptions':
-        return trendingContent.filter(item => item.isSubscription);
-      default:
-        return trendingContent;
-    }
-  };
-  
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Head>
         <title>Explore - NudeFi</title>
         <meta name="description" content="Explore adult content NFTs on NudeFi" />
       </Head>
-      
-      <Header isConnected={isConnected} address={address} connect={connect} disconnect={disconnect} />
+
+      <Header isConnected={isConnected} address={address} disconnect={disconnect} /> 
       
       <main className="container mx-auto px-4 py-24">
         <div className="mb-8">
