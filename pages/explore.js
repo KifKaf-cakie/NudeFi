@@ -31,6 +31,20 @@ export default function ExplorePage() {
     }
     loadData();
   }, []);
+const getCategoryContent = () => {
+  switch (activeCategory) {
+    case 'trending':
+      return trendingContent;
+    case 'recent':
+      return [...trendingContent].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    case 'popular':
+      return [...trendingContent].sort((a, b) => b.mintCount - a.mintCount);
+    case 'subscriptions':
+      return trendingContent.filter(item => item.isSubscription);
+    default:
+      return trendingContent;
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
