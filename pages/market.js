@@ -42,40 +42,42 @@ export default function MarketPage() {
   }, [activeView]);
 
   const getSortedData = () => {
-  if (activeView === 'content') {
-    return [...trendingContent].sort((a, b) => {
-      switch (sortBy) {
-        case 'trending':
-          return b.trendScore - a.trendScore;
-        case 'popular':
-          return b.mintCount - a.mintCount;
-        case 'newest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'price-asc':
-          return parseFloat(a.price) - parseFloat(b.price);
-        case 'price-desc':
-          return parseFloat(b.price) - parseFloat(a.price);
-        default:
-          return b.trendScore - a.trendScore;
-      }
-    });
-  } else {
-    return [...trendingCreators].sort((a, b) => {
-      switch (sortBy) {
-        case 'trending':
-          return parseFloat(b.growth24h) - parseFloat(a.growth24h);
-        case 'marketcap':
-          return parseFloat(b.marketCap) - parseFloat(a.marketCap);
-        case 'followers':
-          return b.followers - a.followers;
-        case 'content':
-          return b.contentCount - a.contentCount;
-        default:
-          return parseFloat(b.growth24h) - parseFloat(a.growth24h);
-      }
-    });
-  }
-};
+    if (activeView === 'content') {
+      return [...trendingContent].sort((a, b) => {
+        switch (sortBy) {
+          case 'trending':
+            return b.trendScore - a.trendScore;
+          case 'popular':
+            return b.mintCount - a.mintCount;
+          case 'newest':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          case 'price-asc':
+            return parseFloat(a.price) - parseFloat(b.price);
+          case 'price-desc':
+            return parseFloat(b.price) - parseFloat(a.price);
+          default:
+            return b.trendScore - a.trendScore;
+        }
+      });
+    } else {
+      return [...trendingCreators].sort((a, b) => {
+        switch (sortBy) {
+          case 'trending':
+            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+          case 'marketcap':
+            return parseFloat(b.marketCap) - parseFloat(a.marketCap);
+          case 'followers':
+            return b.followers - a.followers;
+          case 'content':
+            return b.contentCount - a.contentCount;
+          default:
+            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+        }
+      });
+    }
+  };
+
+  const sortedData = getSortedData();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -84,16 +86,14 @@ export default function MarketPage() {
         <meta name="description" content="NudeFi marketplace for adult content NFTs and creator coins" />
       </Head>
 
-      {/* ✅ connect 削除済み */}
       <Header isConnected={isConnected} address={address} disconnect={disconnect} />
-      
+
       <main className="container mx-auto px-4 py-24">
         <div className="mb-6">
           <h1 className="text-4xl font-bold mb-2">NFT Market</h1>
           <p className="text-gray-400">Buy and trade adult content NFTs and creator coins</p>
         </div>
-        
-        {/* Market Stats */}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-800 p-4 rounded-lg">
             <p className="text-gray-400 mb-1">24h Volume</p>
@@ -116,8 +116,7 @@ export default function MarketPage() {
             <p className="text-red-500 text-sm">-0.8%</p>
           </div>
         </div>
-        
-        {/* AI Trend Insight */}
+
         {trendPredictions.length > 0 && (
           <div className="bg-gradient-to-r from-pink-600/20 to-purple-600/20 border border-pink-500/30 rounded-lg p-6 mb-8">
             <h2 className="text-xl font-bold mb-2 flex items-center">
@@ -133,8 +132,7 @@ export default function MarketPage() {
             </div>
           </div>
         )}
-        
-        {/* View Toggle */}
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div className="flex mb-4 sm:mb-0">
             <button
@@ -150,9 +148,8 @@ export default function MarketPage() {
               Creator Coins
             </button>
           </div>
-          
+
           <div className="flex space-x-2">
-            {/* Time Frame */}
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
@@ -163,8 +160,7 @@ export default function MarketPage() {
               <option value="30d">30 Days</option>
               <option value="all">All Time</option>
             </select>
-            
-            {/* Sort Options */}
+
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -189,8 +185,7 @@ export default function MarketPage() {
             </select>
           </div>
         </div>
-        
-        {/* Content Grid */}
+
         {isLoading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-600"></div>
