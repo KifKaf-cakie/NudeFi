@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from '@wagmi/connectors';
+import { useAccount, useDisconnect } from 'wagmi';
 import Header from '../components/Header';
 import ContentCard from '../components/ContentCard';
 import CreatorCard from '../components/CreatorCard';
@@ -10,11 +9,8 @@ import { fetchTrendingContent, fetchTrendingCreators } from '../services/content
 
 export default function MarketPage() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
   const { disconnect } = useDisconnect();
-  
+
   const [activeView, setActiveView] = useState('content');
   const [trendingContent, setTrendingContent] = useState([]);
   const [trendingCreators, setTrendingCreators] = useState([]);
@@ -22,13 +18,11 @@ export default function MarketPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('trending');
   const [timeframe, setTimeframe] = useState('24h');
-  
+
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
-        
-        // Load data based on active view
         if (activeView === 'content') {
           const content = await fetchTrendingContent(12);
           setTrendingContent(content);
@@ -36,8 +30,6 @@ export default function MarketPage() {
           const creators = await fetchTrendingCreators(12);
           setTrendingCreators(creators);
         }
-        
-        // Get AI trend predictions
         const predictions = await getAITrendPredictions();
         setTrendPredictions(predictions);
       } catch (error) {
@@ -46,57 +38,20 @@ export default function MarketPage() {
         setIsLoading(false);
       }
     }
-    
     loadData();
   }, [activeView]);
-  
-  // Sort data based on selected option
-  const getSortedData = () => {
-    if (activeView === 'content') {
-      return [...trendingContent].sort((a, b) => {
-        switch (sortBy) {
-          case 'trending':
-            return b.trendScore - a.trendScore;
-          case 'popular':
-            return b.mintCount - a.mintCount;
-          case 'newest':
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          case 'price-asc':
-            return parseFloat(a.price) - parseFloat(b.price);
-          case 'price-desc':
-            return parseFloat(b.price) - parseFloat(a.price);
-          default:
-            return b.trendScore - a.trendScore;
-        }
-      });
-    } else {
-      return [...trendingCreators].sort((a, b) => {
-        switch (sortBy) {
-          case 'trending':
-            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
-          case 'marketcap':
-            return parseFloat(b.marketCap) - parseFloat(a.marketCap);
-          case 'followers':
-            return b.followers - a.followers;
-          case 'content':
-            return b.contentCount - a.contentCount;
-          default:
-            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
-        }
-      });
-    }
-  };
-  
+
   const sortedData = getSortedData();
-  
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Head>
         <title>Market - NudeFi</title>
         <meta name="description" content="NudeFi marketplace for adult content NFTs and creator coins" />
       </Head>
-      
-      <Header isConnected={isConnected} address={address} connect={connect} disconnect={disconnect} />
+
+      {/* ✅ connect 削除済み */}
+      <Header isConnected={isConnected} address={address} disconnect={disconnect} />
       
       <main className="container mx-auto px-4 py-24">
         <div className="mb-6">
