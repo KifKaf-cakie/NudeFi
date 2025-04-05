@@ -12,23 +12,53 @@ export default function ContentBrowser() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedContentType, setSelectedContentType] = useState("all");
 
-  const contentItems = [
-    {
-      id: 1,
-      title: "Sample Content",
-      creator: "CreatorName",
-      creatorAvatar: "",
-      coinSymbol: "COIN",
-      contentType: "image",
-      category: "lingerie",
-      image: "https://via.placeholder.com/400x300",
-      isSubscription: true,
-      price: "0.05",
-      mintCount: 120,
-      likes: 99,
-      isNew: true,
-    },
-  ];
+const contentItems = [
+  {
+    id: 1,
+    title: "Beautiful Sunset",
+    creator: "PhotoCreator",
+    creatorAvatar: "",
+    coinSymbol: "PHOTO",
+    contentType: "image",
+    category: "artistic",
+    image: "/images/content/photo-content.png",
+    isSubscription: true,
+    price: "0.05",
+    mintCount: 120,
+    likes: 99,
+    isNew: true,
+  },
+  {
+    id: 2,
+    title: "Sensual Dance",
+    creator: "VideoCreator",
+    creatorAvatar: "",
+    coinSymbol: "VIDEO",
+    contentType: "video",
+    category: "performance",
+    image: "/images/content/video-content.png",
+    isSubscription: false,
+    price: "0.08",
+    mintCount: 85,
+    likes: 67,
+    isNew: false,
+  },
+  {
+    id: 3,
+    title: "Midnight Whispers",
+    creator: "AudioCreator",
+    creatorAvatar: "",
+    coinSymbol: "AUDIO",
+    contentType: "audio",
+    category: "asmr",
+    image: "/images/content/audio-content.png",
+    isSubscription: true,
+    price: "0.03",
+    mintCount: 42,
+    likes: 31,
+    isNew: true,
+  },
+];
 
   const filteredContent = contentItems.filter((item) => {
     if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
