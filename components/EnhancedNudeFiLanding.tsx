@@ -494,14 +494,28 @@ const featuredContent = [
                 Create your first NFT, launch your creator coin, and start
                 building your community of devoted fans.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse">
-                  Connect Wallet to Start
-                </button>
-                <button className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105">
-                  Explore Content
-                </button>
-              </div>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <button
+            onClick={() => {
+              if (!isConnected) {
+                connect({ connector: connectors[0] });
+              }
+            }}
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse"
+          >
+            {isConnected
+              ? address?.slice(0, 6) + '...' + address?.slice(-4)
+              : 'Connect Wallet to Start'}
+          </button>
+
+          <Link href="/explore">
+           　 <button
+              className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105"
+           　 >
+              Explore Content
+           　 </button>
+          　　</Link>
+        　　　</div>
             </div>
           </div>
         </div>
