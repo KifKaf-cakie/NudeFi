@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from 'wagmi/connectors/injected';
+import { InjectedConnector } from '@wagmi/connectors/injected';
 
 export default function EnhancedLandingPage() {
   const { address, isConnected } = useAccount();
