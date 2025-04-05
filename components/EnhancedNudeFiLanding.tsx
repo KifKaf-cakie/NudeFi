@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from '@wagmi/connectors';
+import { injected } from 'wagmi/connectors';
 
 export default function EnhancedLandingPage() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect({ connector: new InjectedConnector() });
+  const { connect } = useConnect({
+  connector: injected()
+  });
   const { disconnect } = useDisconnect();
 
   const [activeCreator, setActiveCreator] = useState(0);
