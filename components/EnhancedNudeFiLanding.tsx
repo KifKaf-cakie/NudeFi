@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { Heart, Lock, DollarSign, BarChart2, TrendingUp, Gift } from 'lucide-react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
@@ -160,12 +161,16 @@ export default function EnhancedNudeFiLanding() {
             intimate communities through tokenized connections
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-            <button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-pink-500/30 transform transition hover:scale-105 animate-pulse">
-              Explore Content
-            </button>
-            <button className="bg-black/30 backdrop-blur-sm border border-pink-500/30 hover:border-pink-500/50 text-white font-bold px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105">
-              Discover Creators
-            </button>
+            <Link href="/explore">
+              <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-pink-500/30 transform transition hover:scale-105 animate-pulse text-center">
+                Explore Content
+              </a>
+            </Link>
+            <Link href="/creators">
+              <a className="bg-black/30 backdrop-blur-sm border border-pink-500/30 hover:border-pink-500/50 text-white font-bold px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105 text-center">
+                Discover Creators
+              </a>
+            </Link>
           </div>
         </div>
       </header>
