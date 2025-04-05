@@ -4,7 +4,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
 const { address, isConnected } = useAccount();
-const { connect } = useConnect({ connector: injected() });
+const { connect } = useConnect();
 const { disconnect } = useDisconnect();
 
 export default function EnhancedNudeFiLanding() {
