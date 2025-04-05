@@ -5,9 +5,7 @@ import { injected } from 'wagmi/connectors';
 
 export default function EnhancedLandingPage() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect({
-  connector: injected()
-  });
+　const { connect } = useConnect();
   const { disconnect } = useDisconnect();
 
   const [activeCreator, setActiveCreator] = useState(0);
@@ -62,21 +60,21 @@ export default function EnhancedLandingPage() {
 
       <header className="p-6 flex justify-between items-center">
         <div className="text-3xl font-bold text-pink-500">NudeFi 💋</div>
-        {isConnected ? (
-          <button
-            onClick={() => disconnect()}
-            className="bg-pink-600 px-4 py-2 rounded"
-          >
-            Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
-          </button>
-        ) : (
-          <button
-            onClick={() => connect()}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 px-4 py-2 rounded"
-          >
-            Connect Wallet
-          </button>
-        )}
+      {isConnected ? (
+        <button
+         onClick={() => disconnect()}
+         className="bg-pink-600 px-4 py-2 rounded"
+         >
+         Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
+        </button>
+         ) : (
+       <button
+         onClick={() => connect({ connector: injected() })}
+         className="bg-gradient-to-r from-pink-600 to-purple-600 px-4 py-2 rounded"
+         >
+    Connect Wallet
+  </button>
+)}
       </header>
 
       <main className="px-4">
