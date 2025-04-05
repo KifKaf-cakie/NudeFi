@@ -1,31 +1,35 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
   ],
-  safelist: [
-    'bg-pink-500',
-    'text-pink-500',
-    'bg-gradient-to-r',
-    'from-pink-500',
-    'to-purple-600',
-    'text-transparent',
-    'bg-clip-text',
-    'text-white',
-    'text-xl',
-    'text-3xl',
-    'text-5xl',
-    'text-6xl',
-    'backdrop-blur-md',
-    'rounded-lg',
-    'shadow-lg',
-    'hover:scale-105',
-    'animate-pulse',
-    'min-h-screen',
-  ],
   theme: {
     extend: {},
   },
+  safelist: [
+    {
+      pattern: /bg-(pink|purple)-(100|200|300|400|500|600|700)/,
+    },
+    {
+      pattern: /text-(pink|purple)-(100|200|300|400|500|600|700)/,
+    },
+    {
+      pattern: /from-(pink|purple)-[0-9]+/,
+    },
+    {
+      pattern: /to-(pink|purple)-[0-9]+/,
+    },
+    {
+      pattern: /bg-gradient-to-[trbl]/,
+    },
+    {
+      pattern: /bg-clip-text/,
+    },
+    {
+      pattern: /text-transparent/,
+    },
+  ],
   plugins: [],
 }
