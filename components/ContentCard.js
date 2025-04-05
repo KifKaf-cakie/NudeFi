@@ -56,16 +56,16 @@ export default function ContentCard({ content, purchased = false }) {
     if (content.contentType === 'image') {
       return (
         <img 
-          src={content.previewUrl || '/placeholder-image.jpg'} 
+          src={content.previewUrl || '/images/content/photo-content.png'} 
           alt={content.title}
           className="w-full h-48 object-cover rounded-t-lg"
         />
       );
-    } else if (content.contentType === 'video') {
+    else if (content.contentType === 'video') {
       return (
         <div className="relative w-full h-48">
           <img 
-            src={content.previewUrl || '/placeholder-video.jpg'} 
+            src={content.previewUrl || '/images/content/video-content.png'} 
             alt={content.title}
             className="w-full h-full object-cover rounded-t-lg"
           />
@@ -81,17 +81,20 @@ export default function ContentCard({ content, purchased = false }) {
       );
     } else if (content.contentType === 'audio') {
       return (
-        <div className="w-full h-48 bg-gray-800 flex items-center justify-center rounded-t-lg">
-          <div className="text-center">
+        <div className="relative w-full h-48">
+          <img 
+            src={content.previewUrl || '/images/content/audio-content.png'} 
+            alt={content.title}
+            className="w-full h-full object-cover rounded-t-lg"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-pink-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
-            <p className="mt-2 text-gray-300">{content.title}</p>
           </div>
         </div>
       );
     }
-  };
   
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:transform hover:scale-102">
@@ -204,7 +207,7 @@ export default function ContentCard({ content, purchased = false }) {
                 <div className="mb-4">
                   {content.contentType === 'image' && (
                     <img 
-                      src={content.contentUrl || content.previewUrl} 
+                      src={content.contentUrl || content.previewUrl || '/images/content/photo-content.png'} 
                       alt={content.title}
                       className="w-full rounded"
                     />
@@ -237,7 +240,7 @@ export default function ContentCard({ content, purchased = false }) {
                 <div className="flex items-center mb-4">
                   <div className="w-16 h-16 rounded overflow-hidden mr-4">
                     <img 
-                      src={content.previewUrl} 
+                      src={content.previewUrl || '/images/content/photo-content.png'} 
                       alt={content.title}
                       className="w-full h-full object-cover"
                     />
