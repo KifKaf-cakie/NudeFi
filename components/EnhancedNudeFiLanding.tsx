@@ -27,42 +27,42 @@ export default function EnhancedNudeFiLanding() {
     return () => clearInterval(interval)
   }, [])
 
-  const featuredContent = [
-    {
-      id: 1,
-      title: 'Midnight Temptation',
-      creator: 'SensualWhisper',
-      coinSymbol: 'WHISP',
-      contentType: 'photo',
-      price: '0.05',
-      mintCount: 127,
-      trendScore: 96,
-      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
-    },
-    {
-      id: 2,
-      title: 'Private Desires',
-      creator: 'ExoticBeauty',
-      coinSymbol: 'EXOT',
-      contentType: 'video',
-      price: '0.08',
-      mintCount: 89,
-      trendScore: 92,
-      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
-    },
-    {
-      id: 3,
-      title: 'Whispers in Lace',
-      creator: 'LaceGoddess',
-      coinSymbol: 'LACE',
-      contentType: 'photo',
-      price: '0.06',
-      mintCount: 115,
-      trendScore: 94,
-      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
-    },
-  ]
-
+const featuredContent = [
+  {
+    id: 1,
+    title: 'Midnight Temptation',
+    creator: 'SensualWhisper',
+    coinSymbol: 'WHISP',
+    contentType: 'photo',
+    price: '0.05',
+    mintCount: 127,
+    trendScore: 96,
+    image: '/images/featured/content-1.jpg' // 新しいパス
+  },
+  {
+    id: 2,
+    title: 'Private Desires',
+    creator: 'ExoticBeauty',
+    coinSymbol: 'EXOT',
+    contentType: 'video',
+    price: '0.08',
+    mintCount: 89,
+    trendScore: 92,
+    image: '/images/featured/content-2.jpg' // 新しいパス
+  },
+  {
+    id: 3,
+    title: 'Whispers in Lace',
+    creator: 'LaceGoddess',
+    coinSymbol: 'LACE',
+    contentType: 'photo',
+    price: '0.06',
+    mintCount: 115,
+    trendScore: 94,
+    image: '/images/featured/content-3.jpg' // 新しいパス
+  },
+];
+  
   const trendingCreators = [
     {
       id: 1,
