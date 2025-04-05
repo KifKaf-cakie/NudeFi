@@ -25,7 +25,8 @@
   "react-dom": "^18.2.0",
   "swr": "^2.2.4",
   "viem": "^2.21.55",
-  "wagmi": "^2.0.0"
+  "wagmi": "^1.1.0",
+  "@wagmi/connectors": "^1.1.0"
 },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
