@@ -1,135 +1,129 @@
-import React, { useState, useEffect } from "react";
-import { Heart, Lock, DollarSign, BarChart2, TrendingUp, Gift } from "lucide-react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { injected } from "wagmi/connectors";
+import React, { useState, useEffect } from 'react'
+import { Heart, Lock, DollarSign, BarChart2, TrendingUp, Gift } from 'lucide-react'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
 export default function EnhancedNudeFiLanding() {
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { address, isConnected } = useAccount()
+  const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
 
-  const [activeCreator, setActiveCreator] = useState(0);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeCreator, setActiveCreator] = useState(0)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   // Auto rotate featured content
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuredContent.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+      setCurrentSlide((prev) => (prev + 1) % featuredContent.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Auto rotate trending creators
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveCreator((prev) => (prev + 1) % trendingCreators.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+      setActiveCreator((prev) => (prev + 1) % trendingCreators.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
 
-  // Mock data for featured content
   const featuredContent = [
     {
       id: 1,
-      title: "Midnight Temptation",
-      creator: "SensualWhisper",
-      coinSymbol: "WHISP",
-      contentType: "photo",
-      price: "0.05",
+      title: 'Midnight Temptation',
+      creator: 'SensualWhisper',
+      coinSymbol: 'WHISP',
+      contentType: 'photo',
+      price: '0.05',
       mintCount: 127,
       trendScore: 96,
-      image: "data:image/svg+xml;utf8,<svg ... ></svg>"
+      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
     },
     {
       id: 2,
-      title: "Private Desires",
-      creator: "ExoticBeauty",
-      coinSymbol: "EXOT",
-      contentType: "video",
-      price: "0.08",
+      title: 'Private Desires',
+      creator: 'ExoticBeauty',
+      coinSymbol: 'EXOT',
+      contentType: 'video',
+      price: '0.08',
       mintCount: 89,
       trendScore: 92,
-      image: "data:image/svg+xml;utf8,<svg ... ></svg>"
+      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
     },
     {
       id: 3,
-      title: "Whispers in Lace",
-      creator: "LaceGoddess",
-      coinSymbol: "LACE",
-      contentType: "photo",
-      price: "0.06",
+      title: 'Whispers in Lace',
+      creator: 'LaceGoddess',
+      coinSymbol: 'LACE',
+      contentType: 'photo',
+      price: '0.06',
       mintCount: 115,
       trendScore: 94,
-      image: "data:image/svg+xml;utf8,<svg ... ></svg>"
-    }
-  ];
+      image: 'data:image/svg+xml;utf8,<svg ... ></svg>'
+    },
+  ]
 
-  // Mock data for trending creators
   const trendingCreators = [
     {
       id: 1,
-      name: "SensualWhisper",
-      coinSymbol: "WHISP",
-      profileImage: "data:image/svg+xml;utf8,<svg ... ></svg>",
-      marketCap: "1.24",
-      growth24h: "+15.7%",
-      followers: "4.2K",
-      monthlyEarnings: "3.2"
+      name: 'SensualWhisper',
+      coinSymbol: 'WHISP',
+      profileImage: 'data:image/svg+xml;utf8,<svg ... ></svg>',
+      marketCap: '1.24',
+      growth24h: '+15.7%',
+      followers: '4.2K',
+      monthlyEarnings: '3.2'
     },
     {
       id: 2,
-      name: "ExoticBeauty",
-      coinSymbol: "EXOT",
-      profileImage: "data:image/svg+xml;utf8,<svg ... ></svg>",
-      marketCap: "0.96",
-      growth24h: "+12.3%",
-      followers: "3.7K",
-      monthlyEarnings: "2.7"
+      name: 'ExoticBeauty',
+      coinSymbol: 'EXOT',
+      profileImage: 'data:image/svg+xml;utf8,<svg ... ></svg>',
+      marketCap: '0.96',
+      growth24h: '+12.3%',
+      followers: '3.7K',
+      monthlyEarnings: '2.7'
     },
     {
       id: 3,
-      name: "LaceGoddess",
-      coinSymbol: "LACE",
-      profileImage: "data:image/svg+xml;utf8,<svg ... ></svg>",
-      marketCap: "0.87",
-      growth24h: "+18.5%",
-      followers: "2.9K",
-      monthlyEarnings: "2.4"
-    }
-  ];
+      name: 'LaceGoddess',
+      coinSymbol: 'LACE',
+      profileImage: 'data:image/svg+xml;utf8,<svg ... ></svg>',
+      marketCap: '0.87',
+      growth24h: '+18.5%',
+      followers: '2.9K',
+      monthlyEarnings: '2.4'
+    },
+  ]
 
-  // AI trend predictions
   const trendPredictions = [
     {
-      title: "Intimate ASMR Content",
+      title: 'Intimate ASMR Content',
       description:
-        "Sensual whispers and intimate sounds are trending with 62% higher engagement.",
+        'Sensual whispers and intimate sounds are trending with 62% higher engagement.',
       confidence: 94,
       growthPotential: 3.2,
-      recommendedTags: ["asmr", "whisper", "intimate", "sensual"]
+      recommendedTags: ['asmr', 'whisper', 'intimate', 'sensual']
     },
     {
-      title: "Lingerie Roleplay",
+      title: 'Lingerie Roleplay',
       description:
-        "Lingerie-themed roleplays showing 4.5x higher token velocity and retention.",
+        'Lingerie-themed roleplays showing 4.5x higher token velocity and retention.',
       confidence: 89,
       growthPotential: 4.5,
-      recommendedTags: ["lingerie", "roleplay", "fantasy", "lace"]
-    }
-  ];
+      recommendedTags: ['lingerie', 'roleplay', 'fantasy', 'lace']
+    },
+  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 text-white">
-      {/* Animated background elements */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl animate-pulse"></div>
         <div
           className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
+          style={{ animationDelay: '2s' }}
         ></div>
       </div>
 
-      {/* Header */}
       <header className="relative z-10 container mx-auto px-4 pt-8 pb-24">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center">
@@ -139,18 +133,13 @@ export default function EnhancedNudeFiLanding() {
             <span className="text-3xl font-bold text-white">Fi</span>
             <span className="ml-1 text-2xl">💋</span>
           </div>
+
           {isConnected ? (
-            <button
-              onClick={() => disconnect()}
-              className="bg-pink-600 px-6 py-2 rounded-lg text-white font-bold shadow-lg hover:bg-pink-700 transition duration-300 hover:scale-105"
-            >
+            <button onClick={() => disconnect()}>
               Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
             </button>
           ) : (
-            <button
-              onClick={() => connect({ connector: injected })}
-              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-lg shadow-lg shadow-pink-500/30 transition-all duration-300 hover:scale-105"
-            >
+            <button onClick={() => connect({ connector: connectors[0] })}>
               Connect Wallet
             </button>
           )}
@@ -161,7 +150,7 @@ export default function EnhancedNudeFiLanding() {
             <span className="relative">
               Desire
               <span className="absolute -bottom-2 left-0 w-full h-1 bg-pink-500 rounded opacity-70"></span>
-            </span>{" "}
+            </span>{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
               Tokenized
             </span>
