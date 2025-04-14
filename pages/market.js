@@ -5,7 +5,15 @@ import Header from '../components/Header';
 import ContentCard from '../components/ContentCard';
 import CreatorCard from '../components/CreatorCard';
 import { getAITrendPredictions } from '../services/aiService';
-import { fetchTrendingContent, fetchTrendingCreators } from '../services/contentService';
+import { 
+  fetchTrendingContent, 
+  fetchTrendingCreators 
+} from '../services/contentService';
+import { 
+  fetchTrendingCoins, 
+  fetchTopVolumeCoins, 
+  fetchMostValuableCoins 
+} from '../services/zoraService';
 
 export default function MarketPage() {
   const { address, isConnected } = useAccount();
@@ -18,18 +26,70 @@ export default function MarketPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('trending');
   const [timeframe, setTimeframe] = useState('24h');
+  const [marketStats, setMarketStats] = useState({
+    volume24h: '12.45 ETH',
+    activeNFTs: '1,257',
+    creatorCoins: '89',
+    avgNFTPrice: '0.068 ETH',
+    volumeChange: '+5.2%',
+    nftChange: '+12',
+    coinChange: '+3',
+    priceChange: '-0.8%'
+  });
 
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
+        
+        // Different fetch based on active view
         if (activeView === 'content') {
+          // Use updated content service which uses Zora Coins SDK
           const content = await fetchTrendingContent(12);
           setTrendingContent(content);
         } else {
+          // Use updated creators service which uses Zora Coins SDK
           const creators = await fetchTrendingCreators(12);
           setTrendingCreators(creators);
+          
+          // Fetch additional market stats from Zora API
+          try {
+            const [topCoins, volumeCoins, valuableCoins] = await Promise.all([
+              fetchTrendingCoins(5),
+              fetchTopVolumeCoins(5),
+              fetchMostValuableCoins(5)
+            ]);
+            
+            // Update market stats with real data if available
+            if (topCoins && topCoins.edges && topCoins.edges.length > 0) {
+              // Calculate total volume
+              const totalVolume = volumeCoins?.edges?.reduce((total, edge) => {
+                const volume = parseFloat(edge.node.volume24h || '0');
+                return total + (isNaN(volume) ? 0 : volume);
+              }, 0) || 0;
+              
+              // Calculate average price
+              const avgPrice = valuableCoins?.edges?.reduce((total, edge) => {
+                const marketCap = parseFloat(edge.node.marketCap || '0');
+                const supply = parseFloat(edge.node.totalSupply || '100000000');
+                return total + (isNaN(marketCap) || isNaN(supply) || supply === 0 ? 0 : marketCap / supply);
+              }, 0) / (valuableCoins?.edges?.length || 1);
+              
+              // Update market stats
+              setMarketStats(prev => ({
+                ...prev,
+                volume24h: totalVolume.toFixed(2) + ' ETH',
+                creatorCoins: (topCoins.edges.length).toString(),
+                avgNFTPrice: isNaN(avgPrice) ? prev.avgNFTPrice : avgPrice.toFixed(4) + ' ETH',
+              }));
+            }
+          } catch (apiError) {
+            console.error("Error fetching market stats:", apiError);
+            // Keep using mock data if API fails
+          }
         }
+        
+        // Get AI trend predictions
         const predictions = await getAITrendPredictions();
         setTrendPredictions(predictions);
       } catch (error) {
@@ -50,11 +110,11 @@ export default function MarketPage() {
           case 'popular':
             return b.mintCount - a.mintCount;
           case 'newest':
-            return new Date(b.createdAt) - new Date(a.createdAt);
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
           case 'price-asc':
-            return parseFloat(a.price) - parseFloat(b.price);
+            return parseFloat(a.price || 0) - parseFloat(b.price || 0);
           case 'price-desc':
-            return parseFloat(b.price) - parseFloat(a.price);
+            return parseFloat(b.price || 0) - parseFloat(a.price || 0);
           default:
             return b.trendScore - a.trendScore;
         }
@@ -63,15 +123,15 @@ export default function MarketPage() {
       return [...trendingCreators].sort((a, b) => {
         switch (sortBy) {
           case 'trending':
-            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+            return parseFloat(b.growth24h || 0) - parseFloat(a.growth24h || 0);
           case 'marketcap':
-            return parseFloat(b.marketCap) - parseFloat(a.marketCap);
+            return parseFloat(b.marketCap || 0) - parseFloat(a.marketCap || 0);
           case 'followers':
             return b.followers - a.followers;
           case 'content':
             return b.contentCount - a.contentCount;
           default:
-            return parseFloat(b.growth24h) - parseFloat(a.growth24h);
+            return parseFloat(b.growth24h || 0) - parseFloat(a.growth24h || 0);
         }
       });
     }
@@ -97,23 +157,23 @@ export default function MarketPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-800 p-4 rounded-lg">
             <p className="text-gray-400 mb-1">24h Volume</p>
-            <p className="text-2xl font-bold">12.45 ETH</p>
-            <p className="text-green-500 text-sm">+5.2%</p>
+            <p className="text-2xl font-bold">{marketStats.volume24h}</p>
+            <p className="text-green-500 text-sm">{marketStats.volumeChange}</p>
           </div>
           <div className="bg-gray-800 p-4 rounded-lg">
             <p className="text-gray-400 mb-1">Active NFTs</p>
-            <p className="text-2xl font-bold">1,257</p>
-            <p className="text-green-500 text-sm">+12 today</p>
+            <p className="text-2xl font-bold">{marketStats.activeNFTs}</p>
+            <p className="text-green-500 text-sm">{marketStats.nftChange} today</p>
           </div>
           <div className="bg-gray-800 p-4 rounded-lg">
             <p className="text-gray-400 mb-1">Creator Coins</p>
-            <p className="text-2xl font-bold">89</p>
-            <p className="text-green-500 text-sm">+3 today</p>
+            <p className="text-2xl font-bold">{marketStats.creatorCoins}</p>
+            <p className="text-green-500 text-sm">{marketStats.coinChange} today</p>
           </div>
           <div className="bg-gray-800 p-4 rounded-lg">
             <p className="text-gray-400 mb-1">Avg. NFT Price</p>
-            <p className="text-2xl font-bold">0.068 ETH</p>
-            <p className="text-red-500 text-sm">-0.8%</p>
+            <p className="text-2xl font-bold">{marketStats.avgNFTPrice}</p>
+            <p className="text-red-500 text-sm">{marketStats.priceChange}</p>
           </div>
         </div>
 
