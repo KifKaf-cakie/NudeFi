@@ -46,6 +46,7 @@ export default function MarketPage() {
         if (activeView === 'content') {
           // Use updated content service which uses Zora Coins SDK
           const content = await fetchTrendingContent(12);
+          console.log("🔍 trending content sample:", content[0]);
           setTrendingContent(content);
         } else {
           // Use updated creators service which uses Zora Coins SDK
