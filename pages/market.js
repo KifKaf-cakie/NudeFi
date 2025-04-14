@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount } from 'wagmi';
 import Header from '../components/Header';
 import ContentCard from '../components/ContentCard';
 import CreatorCard from '../components/CreatorCard';
@@ -17,7 +17,6 @@ import {
 
 export default function MarketPage() {
   const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
 
   const [activeView, setActiveView] = useState('content');
   const [trendingContent, setTrendingContent] = useState([]);
@@ -46,12 +45,20 @@ export default function MarketPage() {
         if (activeView === 'content') {
           // Use updated content service which uses Zora Coins SDK
           const content = await fetchTrendingContent(12);
-          console.log("🔍 trending content sample:", content[0]);
-          setTrendingContent(content);
+          if (content && content.length > 0) {
+            console.log("🔍 trending content sample:", content[0]);
+            setTrendingContent(content);
+          } else {
+            setTrendingContent([]);
+          }
         } else {
           // Use updated creators service which uses Zora Coins SDK
           const creators = await fetchTrendingCreators(12);
-          setTrendingCreators(creators);
+          if (creators && creators.length > 0) {
+            setTrendingCreators(creators);
+          } else {
+            setTrendingCreators([]);
+          }
           
           // Fetch additional market stats from Zora API
           try {
@@ -92,7 +99,11 @@ export default function MarketPage() {
         
         // Get AI trend predictions
         const predictions = await getAITrendPredictions();
-        setTrendPredictions(predictions);
+        if (predictions && predictions.length > 0) {
+          setTrendPredictions(predictions);
+        } else {
+          setTrendPredictions([]);
+        }
       } catch (error) {
         console.error("Error loading market data:", error);
       } finally {
@@ -104,23 +115,27 @@ export default function MarketPage() {
 
   const getSortedData = () => {
     if (activeView === 'content') {
+      if (!trendingContent || trendingContent.length === 0) return [];
+      
       return [...trendingContent].sort((a, b) => {
         switch (sortBy) {
           case 'trending':
-            return b.trendScore - a.trendScore;
+            return (b.trendScore || 0) - (a.trendScore || 0);
           case 'popular':
-            return b.mintCount - a.mintCount;
+            return (b.mintCount || 0) - (a.mintCount || 0);
           case 'newest':
-            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
           case 'price-asc':
             return parseFloat(a.price || 0) - parseFloat(b.price || 0);
           case 'price-desc':
             return parseFloat(b.price || 0) - parseFloat(a.price || 0);
           default:
-            return b.trendScore - a.trendScore;
+            return (b.trendScore || 0) - (a.trendScore || 0);
         }
       });
     } else {
+      if (!trendingCreators || trendingCreators.length === 0) return [];
+      
       return [...trendingCreators].sort((a, b) => {
         switch (sortBy) {
           case 'trending':
@@ -128,9 +143,9 @@ export default function MarketPage() {
           case 'marketcap':
             return parseFloat(b.marketCap || 0) - parseFloat(a.marketCap || 0);
           case 'followers':
-            return b.followers - a.followers;
+            return (b.followers || 0) - (a.followers || 0);
           case 'content':
-            return b.contentCount - a.contentCount;
+            return (b.contentCount || 0) - (a.contentCount || 0);
           default:
             return parseFloat(b.growth24h || 0) - parseFloat(a.growth24h || 0);
         }
@@ -147,7 +162,7 @@ export default function MarketPage() {
         <meta name="description" content="NudeFi marketplace for adult content NFTs and creator coins" />
       </Head>
 
-      <Header isConnected={isConnected} address={address} disconnect={disconnect} />
+      <Header />
 
       <main className="container mx-auto px-4 py-24">
         <div className="mb-6">
@@ -253,14 +268,20 @@ export default function MarketPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeView === 'content' ? (
-              sortedData.map((content) => (
-                <ContentCard key={content.id} content={content} />
-              ))
+            {sortedData && sortedData.length > 0 ? (
+              activeView === 'content' ? (
+                sortedData.map((content) => (
+                  <ContentCard key={content.id || `content-${Math.random()}`} content={content} />
+                ))
+              ) : (
+                sortedData.map((creator) => (
+                  <CreatorCard key={creator.id || `creator-${Math.random()}`} creator={creator} />
+                ))
+              )
             ) : (
-              sortedData.map((creator) => (
-                <CreatorCard key={creator.id} creator={creator} />
-              ))
+              <div className="col-span-3 text-center py-12 bg-gray-800 rounded-lg">
+                <p className="text-gray-400">No {activeView === 'content' ? 'content' : 'creators'} available at the moment.</p>
+              </div>
             )}
           </div>
         )}
