@@ -26,6 +26,8 @@
   "swr": "^2.2.4",
   "viem": "^2.21.55",
   "wagmi": "^2.14.16",
+  "@wagmi/core": "^2.4.7",
+  "@wagmi/connectors": "^2.4.7",
   "@zoralabs/coins-sdk": "latest"
 },
   "devDependencies": {
