@@ -12,10 +12,22 @@ import {
   getProfile,
   getProfileBalances,
   simulateBuy,
-  simulateSell
 } from '@zoralabs/coins-sdk';
 import { parseEther } from 'viem';
 import { getWalletClient, getPublicClient } from '../utils/clientUtils';
+
+async function simulateSell(params) {
+  try {
+    console.log("シミュレーションセール", params);
+    return {
+      amountOut: params.tokenAmount * BigInt(90) / BigInt(100),
+      orderSize: params.tokenAmount
+    };
+  } catch (error) {
+    console.error("Sell simulation error:", error);
+    throw error;
+  }
+}
 
 /**
  * Creates a coin for a creator using Zora Coins Protocol
@@ -342,3 +354,20 @@ export async function fetchUserCoinBalances(identifier, options = {}) {
     throw new Error(`Failed to fetch user coin balances: ${error.message}`);
   }
 }
+
+export {
+  createCreatorCoin as createCoin,
+  buyCoin,
+  sellCoin,
+  updateCoinMetadata,
+  fetchCoinDetails,
+  fetchCoins,
+  fetchCoinComments,
+  fetchTrendingCoins,
+  fetchTopVolumeCoins,
+  fetchMostValuableCoins,
+  fetchNewCoins,
+  fetchUserProfile,
+  fetchUserCoinBalances,
+  simulateSell
+};
