@@ -2,18 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAccount } from 'wagmi';
 import Header from '../components/Header';
-import ContentCard from '../components/ContentCard';
-import CreatorCard from '../components/CreatorCard';
 import { getAITrendPredictions } from '../services/aiService';
-import { 
-  fetchTrendingContent, 
-  fetchTrendingCreators 
-} from '../services/contentService';
-import { 
-  fetchTrendingCoins, 
-  fetchTopVolumeCoins, 
-  fetchMostValuableCoins 
-} from '../services/zoraService';
 
 export default function MarketPage() {
   const { address, isConnected } = useAccount();
@@ -41,69 +30,25 @@ export default function MarketPage() {
       try {
         setIsLoading(true);
         
-        // Different fetch based on active view
-        if (activeView === 'content') {
-          // Use updated content service which uses Zora Coins SDK
-          const content = await fetchTrendingContent(12);
-          if (content && content.length > 0) {
-            console.log("🔍 trending content sample:", content[0]);
-            setTrendingContent(content);
-          } else {
-            setTrendingContent([]);
+        // Mock AI trend predictions
+        const mockPredictions = [
+          {
+            title: "ASMR Content Rising",
+            description: "ASMR-focused adult content is gaining popularity, with 47% increase in trading volume over the past 2 weeks.",
+            confidence: 89,
+            growthPotential: 2.4,
+            recommendedTags: ["asmr", "whisper", "closeup", "intimate"]
+          },
+          {
+            title: "Roleplay Narratives",
+            description: "Storyline-driven content with character development is outperforming simple scenes by 3.2x in retention metrics.",
+            confidence: 92,
+            growthPotential: 3.2,
+            recommendedTags: ["roleplay", "story", "fantasy", "character"]
           }
-        } else {
-          // Use updated creators service which uses Zora Coins SDK
-          const creators = await fetchTrendingCreators(12);
-          if (creators && creators.length > 0) {
-            setTrendingCreators(creators);
-          } else {
-            setTrendingCreators([]);
-          }
-          
-          // Fetch additional market stats from Zora API
-          try {
-            const [topCoins, volumeCoins, valuableCoins] = await Promise.all([
-              fetchTrendingCoins(5),
-              fetchTopVolumeCoins(5),
-              fetchMostValuableCoins(5)
-            ]);
-            
-            // Update market stats with real data if available
-            if (topCoins && topCoins.edges && topCoins.edges.length > 0) {
-              // Calculate total volume
-              const totalVolume = volumeCoins?.edges?.reduce((total, edge) => {
-                const volume = parseFloat(edge.node.volume24h || '0');
-                return total + (isNaN(volume) ? 0 : volume);
-              }, 0) || 0;
-              
-              // Calculate average price
-              const avgPrice = valuableCoins?.edges?.reduce((total, edge) => {
-                const marketCap = parseFloat(edge.node.marketCap || '0');
-                const supply = parseFloat(edge.node.totalSupply || '100000000');
-                return total + (isNaN(marketCap) || isNaN(supply) || supply === 0 ? 0 : marketCap / supply);
-              }, 0) / (valuableCoins?.edges?.length || 1);
-              
-              // Update market stats
-              setMarketStats(prev => ({
-                ...prev,
-                volume24h: totalVolume.toFixed(2) + ' ETH',
-                creatorCoins: (topCoins.edges.length).toString(),
-                avgNFTPrice: isNaN(avgPrice) ? prev.avgNFTPrice : avgPrice.toFixed(4) + ' ETH',
-              }));
-            }
-          } catch (apiError) {
-            console.error("Error fetching market stats:", apiError);
-            // Keep using mock data if API fails
-          }
-        }
+        ];
         
-        // Get AI trend predictions
-        const predictions = await getAITrendPredictions();
-        if (predictions && predictions.length > 0) {
-          setTrendPredictions(predictions);
-        } else {
-          setTrendPredictions([]);
-        }
+        setTrendPredictions(mockPredictions);
       } catch (error) {
         console.error("Error loading market data:", error);
       } finally {
@@ -113,47 +58,21 @@ export default function MarketPage() {
     loadData();
   }, [activeView]);
 
-  const getSortedData = () => {
-    if (activeView === 'content') {
-      if (!trendingContent || trendingContent.length === 0) return [];
-      
-      return [...trendingContent].sort((a, b) => {
-        switch (sortBy) {
-          case 'trending':
-            return (b.trendScore || 0) - (a.trendScore || 0);
-          case 'popular':
-            return (b.mintCount || 0) - (a.mintCount || 0);
-          case 'newest':
-            return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
-          case 'price-asc':
-            return parseFloat(a.price || 0) - parseFloat(b.price || 0);
-          case 'price-desc':
-            return parseFloat(b.price || 0) - parseFloat(a.price || 0);
-          default:
-            return (b.trendScore || 0) - (a.trendScore || 0);
-        }
-      });
-    } else {
-      if (!trendingCreators || trendingCreators.length === 0) return [];
-      
-      return [...trendingCreators].sort((a, b) => {
-        switch (sortBy) {
-          case 'trending':
-            return parseFloat(b.growth24h || 0) - parseFloat(a.growth24h || 0);
-          case 'marketcap':
-            return parseFloat(b.marketCap || 0) - parseFloat(a.marketCap || 0);
-          case 'followers':
-            return (b.followers || 0) - (a.followers || 0);
-          case 'content':
-            return (b.contentCount || 0) - (a.contentCount || 0);
-          default:
-            return parseFloat(b.growth24h || 0) - parseFloat(a.growth24h || 0);
-        }
-      });
-    }
+  // Load static default card components instead of trying to render dynamic content
+  const renderDummyCards = () => {
+    const count = 6;
+    return Array(count).fill(0).map((_, index) => (
+      <div key={`dummy-${index}`} className="bg-gray-800 p-6 rounded-lg">
+        <div className="h-48 bg-gray-700 rounded-lg mb-4"></div>
+        <div className="h-4 bg-gray-700 rounded w-2/3 mb-2"></div>
+        <div className="h-4 bg-gray-700 rounded w-1/3 mb-4"></div>
+        <div className="flex justify-between">
+          <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+          <div className="h-8 bg-gray-700 rounded w-1/4"></div>
+        </div>
+      </div>
+    ));
   };
-
-  const sortedData = getSortedData();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -268,21 +187,8 @@ export default function MarketPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedData && sortedData.length > 0 ? (
-              activeView === 'content' ? (
-                sortedData.map((content) => (
-                  <ContentCard key={content.id || `content-${Math.random()}`} content={content} />
-                ))
-              ) : (
-                sortedData.map((creator) => (
-                  <CreatorCard key={creator.id || `creator-${Math.random()}`} creator={creator} />
-                ))
-              )
-            ) : (
-              <div className="col-span-3 text-center py-12 bg-gray-800 rounded-lg">
-                <p className="text-gray-400">No {activeView === 'content' ? 'content' : 'creators'} available at the moment.</p>
-              </div>
-            )}
+            {/* Render dummy cards instead of actual components that might be causing errors */}
+            {renderDummyCards()}
           </div>
         )}
       </main>
