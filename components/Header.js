@@ -5,7 +5,7 @@ import { ConnectKitButton } from 'connectkit';
 import { useAccount } from 'wagmi';
 
 export default function Header() {
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount();
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -67,19 +67,33 @@ export default function Header() {
               </a>
             </Link>
             {isConnected && (
-              <Link href="/dashboard" legacyBehavior>
-                <a className={`text-lg relative ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
-                  after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
-                  after:transition-all hover:after:w-full ${router.pathname === '/dashboard' ? 'after:w-full' : ''}`}>
-                  Dashboard
-                </a>
-              </Link>
+              <>
+                <Link href="/dashboard" legacyBehavior>
+                  <a className={`text-lg relative ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
+                    after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                    after:transition-all hover:after:w-full ${router.pathname === '/dashboard' ? 'after:w-full' : ''}`}>
+                    Dashboard
+                  </a>
+                </Link>
+                <Link href="/profile" legacyBehavior>
+                  <a className={`text-lg relative ${router.pathname === '/profile' ? 'text-pink-500 font-bold' : 'text-gray-300 hover:text-white'}
+                    after:content-[''] after:absolute after:left-0 after:bottom-[-5px] after:h-[2px] after:w-0 after:bg-pink-500 
+                    after:transition-all hover:after:w-full ${router.pathname === '/profile' ? 'after:w-full' : ''}`}>
+                    Profile
+                  </a>
+                </Link>
+                <Link href="/create" legacyBehavior>
+                  <a className="px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg shadow-pink-500/20 transition-all">
+                    Create
+                  </a>
+                </Link>
+              </>
             )}
           </nav>
           
           {/* Wallet Connection */}
-     <div className="flex items-center">
-       <ConnectKitButton />
+          <div className="flex items-center">
+            <ConnectKitButton />
             {/* Mobile Menu Button */}
             <button 
               className="ml-4 text-white md:hidden"
@@ -123,14 +137,32 @@ export default function Header() {
                 </a>
               </Link>
               {isConnected && (
-                <Link href="/dashboard" legacyBehavior>
-                  <a 
-                    className={`text-lg py-2 ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300'}`}
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    Dashboard
-                  </a>
-                </Link>
+                <>
+                  <Link href="/dashboard" legacyBehavior>
+                    <a 
+                      className={`text-lg py-2 ${router.pathname === '/dashboard' ? 'text-pink-500 font-bold' : 'text-gray-300'}`}
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Dashboard
+                    </a>
+                  </Link>
+                  <Link href="/profile" legacyBehavior>
+                    <a 
+                      className={`text-lg py-2 ${router.pathname === '/profile' ? 'text-pink-500 font-bold' : 'text-gray-300'}`}
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Profile
+                    </a>
+                  </Link>
+                  <Link href="/create" legacyBehavior>
+                    <a 
+                      className="text-lg py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold px-3 rounded"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Create
+                    </a>
+                  </Link>
+                </>
               )}
             </nav>
           </div>
