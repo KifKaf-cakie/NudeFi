@@ -367,19 +367,19 @@ const featuredContent = [
                   </p>
                 </div>
 
-                <div className="flex space-x-4">
-                  <Link href={`/creator/${trendingCreators[activeCreator].name.toLowerCase()}`}>
-                    <a className="flex-1 bg-gray-700/50 hover:bg-gray-700 text-white text-center py-2 rounded-lg border border-pink-500/10 hover:border-pink-500/30 transition-colors">
-                      View Profile
-                    </a>
-                  </Link>
-                  <button 
-                    className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition-all"
-                    onClick={() => handleBuyCreatorToken(trendingCreators[activeCreator].id, trendingCreators[activeCreator].coinSymbol)}
-                  >
-                    Buy Token
-                  </button>
-                </div>
+                  <div className="flex space-x-4 items-stretch"> {/* <- items-stretch を追加 */}
+                    <Link href={`/creator/${trendingCreators[activeCreator].name.toLowerCase()}`}>
+                      <a className="flex-1 bg-gray-700/50 hover:bg-gray-700 text-white text-center py-2 px-4 rounded-lg border border-pink-500/10 hover:border-pink-500/30 transition-colors flex items-center justify-center"> {/* <- flex items-center justify-center を追加, px-4 を追加 */}
+                        View Profile
+                      </a>
+                    </Link>
+                    <button
+                      className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center" // <- flex items-center justify-center を追加, px-4 を追加
+                      onClick={() => handleBuyCreatorToken(trendingCreators[activeCreator].id, trendingCreators[activeCreator].coinSymbol)}
+                    >
+                      Buy Token
+                    </button>
+                  </div>
               </div>
             </div>
 
@@ -513,36 +513,36 @@ const featuredContent = [
                 Create your first NFT, launch your creator coin, and start
                 building your community of devoted fans.
               </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          {isConnected ? (
-            <Link href="/create">
-              <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105">
-                Create Content
-              </a>
-            </Link>
-          ) : (
-            <div className="flex-1 max-w-md mx-auto">
-              <ConnectKitButton.Custom>
-                {({ isConnected, show }) => {
-                  return (
-                    <button
-                      onClick={show}
-                      className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105"
-                    >
-                      Connect Wallet to Start
-                    </button>
-                  );
-                }}
-              </ConnectKitButton.Custom>
-            </div>
-          )}
+<div className="flex flex-col sm:flex-row justify-center items-stretch gap-4">
+                {isConnected ? (
+                  <Link href="/create">
+                    <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 flex items-center justify-center"> {/* <- flex items-center justify-center を追加 */}
+                      Create Content
+                    </a>
+                  </Link>
+                ) : (
+                  <div className="flex-1 max-w-md mx-auto flex">
+                    <ConnectKitButton.Custom>
+                      {({ isConnected, show }) => {
+                        return (
+                          <button
+                            onClick={show}
+                            className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 flex items-center justify-center" // <- flex items-center justify-center を追加
+                          >
+                            Connect Wallet to Start
+                          </button>
+                        );
+                      }}
+                    </ConnectKitButton.Custom>
+                  </div>
+                )}
 
-          <Link href="/explore">
-            <a className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105">
-              Explore Content
-            </a>
-          </Link>
-        </div>
+                <Link href="/explore">
+                  <a className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105 flex items-center justify-center"> {/* <- flex items-center justify-center を追加 */}
+                    Explore Content
+                  </a>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
