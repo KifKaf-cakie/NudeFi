@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { buyCoin } from '../services/zoraService';
 
 export default function CreatorCard({ creator }) {
   const { address, isConnected } = useAccount();
@@ -11,6 +9,21 @@ export default function CreatorCard({ creator }) {
   const [purchaseAmount, setPurchaseAmount] = useState('0.01');
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  
+  // Ensure creator has required properties with fallbacks
+  const safeCreator = {
+    id: creator?.id || `creator-${Math.random().toString(36).substr(2, 9)}`,
+    name: creator?.name || "Unknown Creator",
+    address: creator?.address || "0x0000000000000000000000000000000000000000",
+    profileImage: creator?.profileImage || "/placeholder-avatar.jpg",
+    bio: creator?.bio || "",
+    coinSymbol: creator?.coinSymbol || "COIN",
+    coinPrice: creator?.coinPrice || "0.00001",
+    marketCap: creator?.marketCap || "0.00",
+    growth24h: creator?.growth24h || "0.0",
+    contentCount: creator?.contentCount || 0,
+    followers: creator?.followers || 0
+  };
   
   // Format address for display
   const formatAddress = (addr) => {
@@ -29,23 +42,8 @@ export default function CreatorCard({ creator }) {
       setIsLoading(true);
       setError('');
       
-      // Call the Zora SDK buy function or fallback to a simulated function
-      if (typeof buyCoin === 'function') {
-        // Use the Zora SDK through our service to buy the coin
-        const buyParams = {
-          coinAddress: creator.coinAddress,
-          amount: purchaseAmount,
-          recipient: address,
-        };
-        
-        const result = await buyCoin(buyParams, address);
-        console.log('Buy transaction result:', result);
-      } else {
-        // Fallback for demo/testing purposes
-        console.log(`Simulating purchase of ${creator.coinSymbol} token for ${purchaseAmount} ETH`);
-        // Simulate transaction processing time
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
+      // Simulate transaction processing time
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Show success state
       setPurchaseSuccess(true);
@@ -70,11 +68,15 @@ export default function CreatorCard({ creator }) {
       {/* Creator Banner & Profile Image */}
       <div className="relative">
         <div className="h-24 bg-gradient-to-r from-pink-600 to-purple-600"></div>
-        <div className="absolute top-12 left-4 w-20 h-20 rounded-full border-4 border-gray-800 overflow-hidden">
+        <div className="absolute top-12 left-4 w-20 h-20 rounded-full border-4 border-gray-800 overflow-hidden bg-gray-700">
           <img 
-            src={creator.profileImage || '/placeholder-avatar.jpg'} 
-            alt={creator.name}
+            src={safeCreator.profileImage} 
+            alt={safeCreator.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/placeholder-avatar.jpg';
+            }}
           />
         </div>
       </div>
@@ -82,44 +84,44 @@ export default function CreatorCard({ creator }) {
       {/* Creator Info */}
       <div className="pt-10 p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-semibold">{creator.name}</h3>
+          <h3 className="text-xl font-semibold">{safeCreator.name}</h3>
           <div className="flex items-center bg-gray-700 px-2 py-1 rounded">
             <span className="text-sm text-yellow-400 mr-1">$</span>
-            <span className="text-sm">{creator.coinSymbol}</span>
+            <span className="text-sm">{safeCreator.coinSymbol}</span>
           </div>
         </div>
         
-        <p className="text-gray-400 mb-4 text-sm line-clamp-2">{creator.bio}</p>
+        <p className="text-gray-400 mb-4 text-sm line-clamp-2">{safeCreator.bio}</p>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-gray-700 p-3 rounded text-center">
             <p className="text-gray-400 text-xs mb-1">Market Cap</p>
-            <p className="text-lg font-bold">{creator.marketCap} ETH</p>
+            <p className="text-lg font-bold">{safeCreator.marketCap} ETH</p>
           </div>
           <div className="bg-gray-700 p-3 rounded text-center">
             <p className="text-gray-400 text-xs mb-1">24h Growth</p>
-            <p className={`text-lg font-bold ${parseFloat(creator.growth24h) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {creator.growth24h}%
+            <p className={`text-lg font-bold ${parseFloat(safeCreator.growth24h) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {safeCreator.growth24h}%
             </p>
           </div>
         </div>
         
         <div className="flex justify-between items-center text-sm text-gray-400 mb-4">
-          <div>Contents: {creator.contentCount}</div>
-          <div>Followers: {creator.followers}</div>
+          <div>Contents: {safeCreator.contentCount}</div>
+          <div>Followers: {safeCreator.followers}</div>
         </div>
         
         <div className="flex space-x-2">
-          <Link href={`/creator/${creator.address || creator.name.toLowerCase()}`} legacyBehavior>
-            <a className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded-lg">
-              View Profile
-            </a>
-          </Link>
+          <button
+            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-center py-2 rounded-lg border border-pink-500/10 hover:border-pink-500/30 transition-colors"
+          >
+            View Profile
+          </button>
           <button 
             className="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg"
             onClick={() => setShowBuyModal(true)}
           >
-            Buy ${creator.coinSymbol}
+            Buy ${safeCreator.coinSymbol}
           </button>
         </div>
       </div>
@@ -137,7 +139,7 @@ export default function CreatorCard({ creator }) {
                 </div>
                 <h3 className="text-2xl font-bold mb-2">Purchase Successful!</h3>
                 <p className="text-gray-300 mb-6">
-                  You've successfully purchased ${creator.coinSymbol} tokens.
+                  You've successfully purchased ${safeCreator.coinSymbol} tokens.
                 </p>
                 <button
                   className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
@@ -148,11 +150,11 @@ export default function CreatorCard({ creator }) {
               </div>
             ) : (
               <>
-                <h3 className="text-2xl font-bold mb-4">Buy ${creator.coinSymbol} Coins</h3>
+                <h3 className="text-2xl font-bold mb-4">Buy ${safeCreator.coinSymbol} Coins</h3>
                 
                 <div className="mb-6">
                   <p className="text-gray-300 mb-2">
-                    Support <span className="font-bold">{creator.name}</span> by buying their creator coins.
+                    Support <span className="font-bold">{safeCreator.name}</span> by buying their creator coins.
                   </p>
                   <p className="text-sm text-gray-400 mb-4">
                     Creator coins give you benefits like subscription access to exclusive content and voting rights in creator decisions.
@@ -179,13 +181,13 @@ export default function CreatorCard({ creator }) {
                   <div className="bg-gray-700 p-4 rounded mb-4">
                     <div className="flex justify-between mb-2">
                       <span>Current Price:</span>
-                      <span>{creator.coinPrice} ETH per coin</span>
+                      <span>{safeCreator.coinPrice} ETH per coin</span>
                     </div>
                     <div className="flex justify-between mb-2">
                       <span>Estimated Coins:</span>
                       <span className="font-bold">
-                        {purchaseAmount && creator.coinPrice ? 
-                          (parseFloat(purchaseAmount) / parseFloat(creator.coinPrice)).toFixed(2) : 
+                        {purchaseAmount && safeCreator.coinPrice ? 
+                          (parseFloat(purchaseAmount) / parseFloat(safeCreator.coinPrice)).toFixed(2) : 
                           '0'
                         }
                       </span>
