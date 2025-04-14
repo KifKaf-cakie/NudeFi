@@ -16,7 +16,7 @@ import {
 import { parseEther } from 'viem';
 import { getWalletClient, getPublicClient } from '../utils/clientUtils';
 
-async function simulateSell(params) {
+export async function simulateSell(params) {
   try {
     console.log("シミュレーションセール", params);
     return {
@@ -354,20 +354,3 @@ export async function fetchUserCoinBalances(identifier, options = {}) {
     throw new Error(`Failed to fetch user coin balances: ${error.message}`);
   }
 }
-
-export {
-  createCreatorCoin as createCoin,
-  buyCoin,
-  sellCoin,
-  updateCoinMetadata,
-  fetchCoinDetails,
-  fetchCoins,
-  fetchCoinComments,
-  fetchTrendingCoins,
-  fetchTopVolumeCoins,
-  fetchMostValuableCoins,
-  fetchNewCoins,
-  fetchUserProfile,
-  fetchUserCoinBalances,
-  simulateSell
-};
