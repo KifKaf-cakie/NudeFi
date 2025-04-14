@@ -1,6 +1,6 @@
 import { uploadToIPFS, getIPFSGatewayURL } from '../utils/ipfsUtils';
 import { 
-  createCoin,
+  createCoinSDK as createCoin,
   buyCoin,
   fetchCoinDetails,
   fetchTrendingCoins,
