@@ -2,6 +2,7 @@ import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { Heart, Lock, DollarSign, BarChart2, TrendingUp, Gift } from 'lucide-react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import Header from './Header'
 
 export default function EnhancedNudeFiLanding() {
   const { address, isConnected } = useAccount()
@@ -114,6 +115,32 @@ const featuredContent = [
       recommendedTags: ['lingerie', 'roleplay', 'fantasy', 'lace']
     },
   ]
+  
+  // Handle purchasing featured content
+  const handlePurchaseContent = (contentId) => {
+    if (!isConnected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+    
+    // In a real implementation, this would call your mintContent function
+    console.log(`Purchasing content with ID: ${contentId}`);
+    // Here you would integrate with your contentService.js
+    // Example: mintContent(contentId, price, address)
+  };
+  
+  // Handle buying creator tokens
+  const handleBuyCreatorToken = (creatorId, symbol) => {
+    if (!isConnected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+    
+    // In a real implementation, this would call your buyCoin function
+    console.log(`Buying token ${symbol} for creator with ID: ${creatorId}`);
+    // Here you would integrate with your zoraService.js
+    // Example: buyCoin({coinAddress, amount, recipient}, address)
+  };
     
    return (
    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 text-white px-4 py-10">
@@ -124,27 +151,11 @@ const featuredContent = [
          style={{ animationDelay: '2s' }}
          ></div>
        </div>
-      <header className="relative z-10 container mx-auto px-4 pt-8 pb-24">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
-            <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
-              Nude
-            </span>
-            <span className="text-3xl font-bold text-white">Fi</span>
-            <span className="ml-1 text-2xl">💋</span>
-          </div>
-
-          {isConnected ? (
-            <button onClick={() => disconnect()}>
-              Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
-            </button>
-          ) : (
-            <button onClick={() => connect({ connector: connectors[0] })}>
-              Connect Wallet
-            </button>
-          )}
-        </div>
-
+      
+      {/* Use the updated Header component */}
+      <Header />
+      
+      <header className="relative z-10 container mx-auto px-4 pt-28 pb-24">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             <span className="relative">
@@ -220,7 +231,10 @@ const featuredContent = [
                       <span className="text-2xl font-bold">
                         {item.price} ETH
                       </span>
-                      <button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-lg shadow-lg shadow-pink-500/20 transition-all hover:scale-105">
+                      <button 
+                        className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-lg shadow-lg shadow-pink-500/20 transition-all hover:scale-105"
+                        onClick={() => handlePurchaseContent(item.id)}
+                      >
                         Purchase
                       </button>
                     </div>
@@ -353,10 +367,15 @@ const featuredContent = [
                 </div>
 
                 <div className="flex space-x-4">
-                  <button className="flex-1 bg-gray-700/50 hover:bg-gray-700 text-white text-center py-2 rounded-lg border border-pink-500/10 hover:border-pink-500/30 transition-colors">
-                    View Profile
-                  </button>
-                  <button className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition-all">
+                  <Link href={`/creator/${trendingCreators[activeCreator].name.toLowerCase()}`}>
+                    <a className="flex-1 bg-gray-700/50 hover:bg-gray-700 text-white text-center py-2 rounded-lg border border-pink-500/10 hover:border-pink-500/30 transition-colors">
+                      View Profile
+                    </a>
+                  </Link>
+                  <button 
+                    className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold py-2 rounded-lg transition-all"
+                    onClick={() => handleBuyCreatorToken(trendingCreators[activeCreator].id, trendingCreators[activeCreator].coinSymbol)}
+                  >
                     Buy Token
                   </button>
                 </div>
@@ -494,27 +513,27 @@ const featuredContent = [
                 building your community of devoted fans.
               </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <button
-            onClick={() => {
-              if (!isConnected) {
-                connect({ connector: connectors[0] });
-              }
-            }}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse"
-          >
-            {isConnected
-              ? address?.slice(0, 6) + '...' + address?.slice(-4)
-              : 'Connect Wallet to Start'}
-          </button>
+          {isConnected ? (
+            <Link href="/create">
+              <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse">
+                Create Content
+              </a>
+            </Link>
+          ) : (
+            <button
+              onClick={() => connect({ connector: connectors[0] })}
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse"
+            >
+              Connect Wallet to Start
+            </button>
+          )}
 
           <Link href="/explore">
-           　 <button
-              className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105"
-           　 >
+            <a className="bg-black/50 backdrop-blur-sm text-white border border-pink-500/30 hover:border-pink-500/70 font-bold text-lg px-8 py-3 rounded-lg shadow-lg transform transition hover:scale-105">
               Explore Content
-           　 </button>
-          　　</Link>
-        　　　</div>
+            </a>
+          </Link>
+        </div>
             </div>
           </div>
         </div>
