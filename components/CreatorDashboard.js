@@ -3,12 +3,9 @@ import { useAccount, useDisconnect } from 'wagmi';
 import Head from 'next/head';
 import Link from 'next/link';
 import Header from '../components/Header';
-import { createContent, fetchCreatorContent, fetchCreatorCoin } from '../services/contentService';
-import { readContract } from '@wagmi/core';
-import { parseEther } from 'viem';
 import ContentUploadForm from '../components/ContentUploadForm';
 import ContentList from '../components/ContentList';
-import CoinStats from '../components/CoinStats';
+import { createContent, fetchCreatorContent, fetchCreatorCoin } from '../services/contentService';
 
 export default function CreatorDashboard() {
   const { address, isConnected } = useAccount();
@@ -19,6 +16,7 @@ export default function CreatorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('content');
+  const [refreshContent, setRefreshContent] = useState(0); // Counter to trigger refreshes
   
   useEffect(() => {
     if (!isConnected || !address) return;
@@ -28,7 +26,7 @@ export default function CreatorDashboard() {
         setIsLoading(true);
         setError(null);
         
-        // Fetch creator's content
+        // Fetch creator's content using our updated service
         const content = await fetchCreatorContent(address);
         setCreatorContent(content);
         
@@ -44,45 +42,12 @@ export default function CreatorDashboard() {
     }
     
     loadCreatorData();
-  }, [address, isConnected]);
+  }, [address, isConnected, refreshContent]);
   
-  const handleContentUpload = async (contentData) => {
-    try {
-      setIsLoading(true);
-      
-      // Upload content metadata to IPFS
-      const ipfsUri = await uploadToIPFS(contentData);
-      
-      // Create content on blockchain
-      const result = await createContent({
-        uri: ipfsUri,
-        price: parseEther(contentData.price),
-        isSubscription: contentData.isSubscription,
-        subscriptionPrice: contentData.subscriptionPrice || 0,
-        contentType: contentData.contentType,
-        coinSymbol: contentData.coinSymbol || "NUDE",
-        coinName: contentData.coinName || "NudeFi Creator Coin"
-      });
-      
-      // Refresh content list
-      const updatedContent = await fetchCreatorContent(address);
-      setCreatorContent(updatedContent);
-      
-      return result;
-    } catch (err) {
-      console.error("Error uploading content:", err);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Helper function to upload to IPFS
-  const uploadToIPFS = async (data) => {
-    // In a real implementation, you would use an IPFS service here
-    console.log("Uploading to IPFS:", data);
-    // Mock return - in production use actual IPFS URI
-    return `ipfs://QmExample${Math.random().toString(36).substring(2, 10)}`;
+  // Handler for successful content creation
+  const handleContentCreated = (newContent) => {
+    setRefreshContent(prev => prev + 1); // Increment to trigger a refresh
+    setActiveTab('content'); // Switch to content tab to show the new content
   };
   
   return (
@@ -141,6 +106,9 @@ export default function CreatorDashboard() {
                     <p className="text-2xl font-bold text-pink-500">{coinInfo.creatorEarnings} ETH</p>
                   </div>
                 </div>
+                <div className="mt-4 text-gray-400 text-sm">
+                  <p>Coin Address: {coinInfo.address}</p>
+                </div>
               </div>
             ) : (
               <div className="bg-gray-800 p-6 rounded-lg mb-8 border border-pink-500/20">
@@ -185,7 +153,9 @@ export default function CreatorDashboard() {
             )}
             
             {activeTab === 'upload' && (
-              <ContentUploadForm onSubmit={handleContentUpload} />
+              <ContentUploadForm 
+                onSuccess={handleContentCreated} 
+              />
             )}
             
             {activeTab === 'analytics' && (
@@ -211,8 +181,8 @@ export default function CreatorDashboard() {
                               <tr key={content.id} className="border-b border-gray-700">
                                 <td className="py-3">{content.title}</td>
                                 <td className="py-3">{content.mintCount}</td>
-                                <td className="py-3">{content.revenue} ETH</td>
-                                <td className="py-3">{content.engagement}%</td>
+                                <td className="py-3">{content.revenue || '0.00'} ETH</td>
+                                <td className="py-3">{content.engagement || '0'}%</td>
                               </tr>
                             ))}
                           </tbody>
