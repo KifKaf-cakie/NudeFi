@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { ConnectKitButton } from 'connectkit';
+import { useAccount } from 'wagmi';
 
-export default function Header({ isConnected, address, connect, disconnect }) {
+export default function Header() {
+  const { isConnected } = useAccount()
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -75,35 +78,8 @@ export default function Header({ isConnected, address, connect, disconnect }) {
           </nav>
           
           {/* Wallet Connection */}
-          <div className="flex items-center">
-            {isConnected ? (
-              <div className="flex items-center space-x-4">
-                <Link href="/profile" legacyBehavior>
-                  <a className="flex items-center bg-gray-800 hover:bg-gray-700 rounded-full px-4 py-2 border border-pink-500/30 transition-all hover:border-pink-500/80">
-                    <span className="text-white mr-2">{formatAddress(address)}</span>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">
-                        {address?.substring(2, 4).toUpperCase()}
-                      </span>
-                    </div>
-                  </a>
-                </Link>
-                <button 
-                  onClick={disconnect}
-                  className="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-pink-500/50 text-white px-4 py-2 rounded-lg text-sm hidden lg:block transition-colors"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={connect}
-                className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-lg transition-all hover:shadow-lg hover:shadow-pink-500/20"
-              >
-                Connect Wallet
-              </button>
-            )}
-            
+     <div className="flex items-center">
+       <ConnectKitButton />
             {/* Mobile Menu Button */}
             <button 
               className="ml-4 text-white md:hidden"
@@ -155,17 +131,6 @@ export default function Header({ isConnected, address, connect, disconnect }) {
                     Dashboard
                   </a>
                 </Link>
-              )}
-              {isConnected && (
-                <button 
-                  onClick={() => {
-                    disconnect();
-                    setShowMobileMenu(false);
-                  }}
-                  className="text-left text-lg py-2 text-gray-300"
-                >
-                  Disconnect
-                </button>
               )}
             </nav>
           </div>
