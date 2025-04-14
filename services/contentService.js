@@ -1,6 +1,6 @@
 import { uploadToIPFS, getIPFSGatewayURL } from '../utils/ipfsUtils';
 import { 
-  createCreatorCoin,
+  createCoin,
   buyCoin,
   fetchCoinDetails,
   fetchTrendingCoins,
@@ -16,7 +16,7 @@ const creatorCoinsStore = new Map();
 const contentStore = new Map();
 
 /**
- * Creates new content using Zora's Coins Protocol
+ * Creates new content using Zora's Coins Protocol for the coin and our marketplace for NFTs
  * @param {Object} contentData - Content data to create
  * @param {string} account - Creator's wallet address
  * @returns {Promise<Object>} - Created content data
@@ -32,7 +32,7 @@ export async function createContent(contentData, account) {
     // 3. Check if creator already has a coin
     let creatorCoin = creatorCoinsStore.get(account);
     
-    // 4. If no coin exists, create one
+    // 4. If no coin exists, create one using ZORA COINS SDK
     if (!creatorCoin) {
       // Create coin using Zora Coins SDK
       const coinParams = {
@@ -43,7 +43,7 @@ export async function createContent(contentData, account) {
         initialPurchaseWei: parseEther('0.01') // Small initial purchase
       };
       
-      const result = await createCreatorCoin(coinParams, account);
+      const result = await createCoin(coinParams, account);
       creatorCoin = {
         address: result.address,
         symbol: coinParams.symbol,
@@ -55,8 +55,18 @@ export async function createContent(contentData, account) {
       console.log(`Created new coin for creator: ${creatorCoin.address}`);
     }
     
-    // 5. Create content entry
-    const contentId = `content-${Date.now()}`;
+    // 5. Register the content on the NudeFi marketplace contract
+    const contentId = await registerContentWithMarketplace({
+      uri: `ipfs://${metadataCid}`,
+      price: contentData.price,
+      isSubscription: contentData.isSubscription,
+      subscriptionPrice: contentData.isSubscription ? contentData.subscriptionPrice : "0",
+      contentType: contentData.contentType,
+      coinAddress: creatorCoin.address,
+      creator: account
+    });
+    
+    // 6. Create content entry in our database
     const newContent = {
       id: contentId,
       title: contentData.title,
@@ -88,7 +98,23 @@ export async function createContent(contentData, account) {
 }
 
 /**
- * Mints content NFT for a buyer
+ * Register content with the NudeFi marketplace smart contract
+ * @param {Object} contentData - Content data
+ * @returns {Promise<string>} - Content ID
+ */
+async function registerContentWithMarketplace(contentData) {
+  try {
+    // In a real implementation, this would call the smart contract
+    // For demo purposes, generate a random ID
+    return `content-${Date.now()}`;
+  } catch (error) {
+    console.error("Error registering content with marketplace:", error);
+    throw error;
+  }
+}
+
+/**
+ * Mints content NFT for a buyer and handles coin trading through Zora SDK
  * @param {string} contentId - Content ID to mint
  * @param {string} price - Price in ETH
  * @param {string} account - Buyer's wallet address
@@ -102,27 +128,110 @@ export async function mintContent(contentId, price, account) {
       throw new Error("Content not found");
     }
     
-    // Use Zora SDK to buy coin as part of the minting process
-    const buyParams = {
-      coinAddress: content.coinAddress,
-      amount: price,
-      recipient: account
-    };
+    // 1. First mint the NFT through our marketplace contract
+    const mintResult = await mintNFTFromMarketplace(contentId, price, account);
     
-    const result = await buyCoin(buyParams, account);
+    // 2. Then optionally buy creator coins using Zora SDK (if user wants to subscribe)
+    if (content.isSubscription) {
+      // Calculate a suitable amount to buy
+      const coinAmount = content.subscriptionPrice;
+      
+      // Buy coins using Zora SDK
+      const buyParams = {
+        coinAddress: content.coinAddress,
+        amount: coinAmount.toString(),
+        recipient: account
+      };
+      
+      const buyResult = await buyCoin(buyParams, account);
+      console.log("Bought creator coins:", buyResult);
+    }
     
     // Update content mint count
     content.mintCount += 1;
     contentStore.set(contentId, content);
     
     return {
-      txHash: result.hash,
+      txHash: mintResult.txHash,
       contentId,
       price,
       timestamp: new Date().toISOString()
     };
   } catch (error) {
     console.error("Error minting content:", error);
+    throw error;
+  }
+}
+
+/**
+ * Mint NFT from the marketplace contract
+ * @param {string} contentId - Content ID
+ * @param {string} price - Price in ETH
+ * @param {string} account - Buyer address
+ * @returns {Promise<Object>} - Transaction result
+ */
+async function mintNFTFromMarketplace(contentId, price, account) {
+  // In a real implementation, this would call the smart contract
+  // For demo purposes, return a mock result
+  return {
+    txHash: `0x${Math.random().toString(36).substring(2, 15)}`,
+    success: true
+  };
+}
+
+/**
+ * Upload content to IPFS
+ * @param {Object} file - File object
+ * @returns {Promise<string>} - IPFS CID
+ */
+async function uploadContentToIPFS(file) {
+  try {
+    // Upload to IPFS
+    const result = await uploadToIPFS(file.buffer || file);
+    return result.cid;
+  } catch (error) {
+    console.error("Error uploading content to IPFS:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create and upload metadata to IPFS
+ * @param {Object} contentData - Content data
+ * @param {string} contentCid - Content IPFS CID
+ * @returns {Promise<string>} - Metadata IPFS CID
+ */
+async function createAndUploadMetadata(contentData, contentCid) {
+  try {
+    // Construct metadata JSON
+    const metadata = {
+      name: contentData.title,
+      description: contentData.description || "",
+      image: `ipfs://${contentCid}`,
+      properties: {
+        creator: contentData.creator,
+        contentType: contentData.contentType,
+        price: contentData.price.toString(),
+        isSubscription: contentData.isSubscription,
+        tags: contentData.tags || []
+      }
+    };
+    
+    // Add content specific properties
+    if (contentData.isSubscription) {
+      metadata.properties.subscriptionPrice = contentData.subscriptionPrice.toString();
+    }
+    
+    // Add animation_url for video and audio
+    if (contentData.contentType === 'video' || contentData.contentType === 'audio') {
+      metadata.animation_url = `ipfs://${contentCid}`;
+    }
+    
+    // Upload metadata to IPFS
+    const result = await uploadToIPFS(JSON.stringify(metadata));
+    return result.cid;
+  } catch (error) {
+    console.error("Error creating metadata:", error);
     throw error;
   }
 }
