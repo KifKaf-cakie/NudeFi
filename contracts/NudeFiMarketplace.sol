@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@zoralabs/coins-sdk/contracts/interfaces/IZoraFactory.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -9,27 +8,23 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 /**
  * @title NudeFiMarketplace
  * @dev Smart contract for adult content NFT marketplace with Zora Coins integration
+ * @notice This contract ONLY handles NFT minting and verification - coin functionality
+ * is handled through Zora Coins SDK
  */
 contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
-    // Zora Factory contract for creating coins
-    IZoraFactory public zoraFactory;
-    
-    // Base chain WETH address
-    address public constant WETH = 0x4200000000000000000000000000000000000006;
-    
-    // Content verification status
-    enum VerificationStatus { Pending, Approved, Rejected }
-    
     // Platform fee (3%)
     uint256 public platformFee = 300; // 3% (in basis points)
     uint256 public constant BASIS_POINTS = 10000;
+    
+    // Content verification status
+    enum VerificationStatus { Pending, Approved, Rejected }
     
     // Content struct
     struct Content {
         string uri;                   // IPFS URI to content metadata
         address creator;              // Content creator address
         uint256 price;                // Price in ETH
-        address coinAddress;          // Zora coin address for this content
+        address coinAddress;          // Zora coin address for this content (set externally)
         bool isSubscription;          // Is this a subscription model
         uint256 subscriptionPrice;    // Subscription price in creator coins
         VerificationStatus status;    // Content verification status
@@ -43,42 +38,36 @@ contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
     // Mapping from creator to their content token IDs
     mapping(address => uint256[]) public creatorContent;
     
-    // Mapping creator address to coin address
+    // Mapping creator address to coin address - this is set from outside via SDK
     mapping(address => address) public creatorCoins;
     
     // Events
     event ContentCreated(uint256 indexed tokenId, address indexed creator, string uri);
     event ContentMinted(uint256 indexed tokenId, address indexed minter, uint256 price);
-    event CoinCreated(address indexed creator, address indexed coinAddress, string symbol);
     event ContentVerificationChanged(uint256 indexed tokenId, VerificationStatus status);
+    event CreatorCoinLinked(address indexed creator, address indexed coinAddress);
     
-    constructor(address _zoraFactory) ERC721("NudeFi Adult Content", "NUDE") {
-        zoraFactory = IZoraFactory(_zoraFactory);
-    }
+    constructor() ERC721("NudeFi Adult Content", "NUDE") {}
     
     /**
-     * @dev Creates new adult content NFT and associated Zora coin if creator doesn't have one
+     * @dev Register content with an existing coin address (created via SDK)
      * @param _uri IPFS URI to content metadata
      * @param _price Price in ETH
      * @param _isSubscription Whether this is subscription content
      * @param _subscriptionPrice Price in creator coins for subscription
      * @param _contentType Type of content (image, video, audio)
-     * @param _coinSymbol Symbol for creator coin (only used if creator doesn't have a coin yet)
-     * @param _coinName Name for creator coin (only used if creator doesn't have a coin yet)
+     * @param _coinAddress Address of the creator's Zora coin (from SDK)
      */
-    function createContent(
+    function registerContent(
         string memory _uri,
         uint256 _price,
         bool _isSubscription,
         uint256 _subscriptionPrice,
         string memory _contentType,
-        string memory _coinSymbol,
-        string memory _coinName
+        address _coinAddress
     ) external returns (uint256) {
-        // Create creator coin if they don't have one yet
-        if (creatorCoins[msg.sender] == address(0)) {
-            _createCreatorCoin(msg.sender, _coinName, _coinSymbol, _uri);
-        }
+        // Require valid coin address
+        require(_coinAddress != address(0), "Invalid coin address");
         
         // Create new token ID
         uint256 tokenId = totalSupply() + 1;
@@ -88,7 +77,7 @@ contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
             uri: _uri,
             creator: msg.sender,
             price: _price,
-            coinAddress: creatorCoins[msg.sender],
+            coinAddress: _coinAddress,
             isSubscription: _isSubscription,
             subscriptionPrice: _subscriptionPrice,
             status: VerificationStatus.Pending,
@@ -98,6 +87,12 @@ contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
         
         // Add to creator's content list
         creatorContent[msg.sender].push(tokenId);
+        
+        // Update creator coin mapping if not already set
+        if (creatorCoins[msg.sender] == address(0)) {
+            creatorCoins[msg.sender] = _coinAddress;
+            emit CreatorCoinLinked(msg.sender, _coinAddress);
+        }
         
         // Emit event
         emit ContentCreated(tokenId, msg.sender, _uri);
@@ -135,45 +130,6 @@ contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Creates a Zora coin for a creator
-     * @param _creator Creator address
-     * @param _name Coin name
-     * @param _symbol Coin symbol
-     * @param _uri Metadata URI for the coin
-     */
-    function _createCreatorCoin(
-        address _creator,
-        string memory _name,
-        string memory _symbol,
-        string memory _uri
-    ) internal {
-        // Setup owners array (just the creator for now)
-        address[] memory owners = new address[](1);
-        owners[0] = _creator;
-        
-        // Deploy coin through Zora Factory
-        // Note: In production, you would handle this through the Zora SDK
-        // This is a simplified version for the contract
-        (address coinAddress, ) = zoraFactory.deploy(
-            _creator,                   // payoutRecipient
-            owners,                     // owners
-            _uri,                       // uri
-            _name,                      // name
-            _symbol,                    // symbol
-            address(this),              // platformReferrer (the marketplace gets referral fees)
-            WETH,                       // currency (WETH on Base)
-            -199200,                    // tickLower (default for WETH pairs)
-            0                           // orderSize (no initial purchase)
-        );
-        
-        // Store creator's coin address
-        creatorCoins[_creator] = coinAddress;
-        
-        // Emit event
-        emit CoinCreated(_creator, coinAddress, _symbol);
-    }
-    
-    /**
      * @dev Updates content verification status (admin only)
      * @param _tokenId Token ID
      * @param _status New verification status
@@ -206,5 +162,15 @@ contract NudeFiMarketplace is ERC721Enumerable, Ownable, ReentrancyGuard {
     function updatePlatformFee(uint256 _platformFee) external onlyOwner {
         require(_platformFee <= 1000, "Fee too high"); // Max 10%
         platformFee = _platformFee;
+    }
+    
+    /**
+     * @dev Register coin address for a creator (can be called by the creator only)
+     * @param _coinAddress Address of the creator's Zora coin
+     */
+    function registerCreatorCoin(address _coinAddress) external {
+        require(_coinAddress != address(0), "Invalid coin address");
+        creatorCoins[msg.sender] = _coinAddress;
+        emit CreatorCoinLinked(msg.sender, _coinAddress);
     }
 }
