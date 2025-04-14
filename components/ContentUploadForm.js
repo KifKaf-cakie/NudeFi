@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
+import { createContent } from '../services/contentService';
 
-export default function ContentUploadForm({ onSubmit }) {
+export default function ContentUploadForm({ onSubmit, onSuccess }) {
   const { address } = useAccount();
   
   const [title, setTitle] = useState('');
@@ -19,6 +20,7 @@ export default function ContentUploadForm({ onSubmit }) {
   const [newTag, setNewTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [ageVerification, setAgeVerification] = useState(false);
   const [contentOwnership, setContentOwnership] = useState(false);
   
@@ -93,9 +95,14 @@ export default function ContentUploadForm({ onSubmit }) {
     try {
       setIsLoading(true);
       setError('');
+      setSuccessMessage('');
       
-      // Prepare metadata
-      const metadata = {
+      // Generate coin symbol from title if not provided
+      const generatedSymbol = coinSymbol || 
+        title.split(/\s+/).map(word => word[0]).join('').toUpperCase().substring(0, 5);
+      
+      // Prepare content data
+      const contentData = {
         title,
         description,
         contentType,
@@ -103,29 +110,40 @@ export default function ContentUploadForm({ onSubmit }) {
         isSubscription,
         subscriptionPrice: isSubscription ? subscriptionPrice : '0',
         coinName: coinName || `${title} Fan Token`,
-        coinSymbol: coinSymbol || title.substring(0, 5).toUpperCase(),
+        coinSymbol: generatedSymbol,
         tags,
         creator: address,
         file
       };
       
-      // Call the onSubmit function passed as prop
-      await onSubmit(metadata);
+      // Create content using Zora Coins SDK via our service
+      const result = await createContent(contentData, address);
       
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setPrice('0.01');
-      setIsSubscription(false);
-      setSubscriptionPrice('100');
-      setCoinName('');
-      setCoinSymbol('');
-      setFile(null);
-      setPreviewUrl('');
-      setTags([]);
-      setNewTag('');
-      setAgeVerification(false);
-      setContentOwnership(false);
+      // Show success message
+      setSuccessMessage('Content created successfully! Your NFT is being processed and will be available soon.');
+      
+      // Reset form after success
+      setTimeout(() => {
+        setTitle('');
+        setDescription('');
+        setPrice('0.01');
+        setIsSubscription(false);
+        setSubscriptionPrice('100');
+        setCoinName('');
+        setCoinSymbol('');
+        setFile(null);
+        setPreviewUrl('');
+        setTags([]);
+        setNewTag('');
+        setAgeVerification(false);
+        setContentOwnership(false);
+        setSuccessMessage('');
+        
+        // Call onSuccess callback if provided
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      }, 5000);
       
     } catch (err) {
       console.error("Error submitting content:", err);
@@ -142,6 +160,12 @@ export default function ContentUploadForm({ onSubmit }) {
       {error && (
         <div className="bg-red-600 text-white p-4 rounded mb-6">
           {error}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="bg-green-600 text-white p-4 rounded mb-6">
+          {successMessage}
         </div>
       )}
       
@@ -330,6 +354,9 @@ export default function ContentUploadForm({ onSubmit }) {
                 placeholder="e.g. SEXY"
                 maxLength={5}
               />
+              <p className="text-sm text-gray-400 mt-1">
+                Maximum 5 characters. Will be generated from title if not provided.
+              </p>
             </div>
             
             {previewUrl && (
@@ -400,9 +427,17 @@ export default function ContentUploadForm({ onSubmit }) {
           <button 
             type="submit"
             disabled={isLoading}
-            className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg flex items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isLoading ? 'Uploading...' : 'Upload Content'}
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading...
+              </>
+            ) : 'Upload Content'}
           </button>
         </div>
       </form>
