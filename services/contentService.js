@@ -180,63 +180,6 @@ async function mintNFTFromMarketplace(contentId, price, account) {
 }
 
 /**
- * Upload content to IPFS
- * @param {Object} file - File object
- * @returns {Promise<string>} - IPFS CID
- */
-async function uploadContentToIPFS(file) {
-  try {
-    // Upload to IPFS
-    const result = await uploadToIPFS(file.buffer || file);
-    return result.cid;
-  } catch (error) {
-    console.error("Error uploading content to IPFS:", error);
-    throw error;
-  }
-}
-
-/**
- * Create and upload metadata to IPFS
- * @param {Object} contentData - Content data
- * @param {string} contentCid - Content IPFS CID
- * @returns {Promise<string>} - Metadata IPFS CID
- */
-async function createAndUploadMetadata(contentData, contentCid) {
-  try {
-    // Construct metadata JSON
-    const metadata = {
-      name: contentData.title,
-      description: contentData.description || "",
-      image: `ipfs://${contentCid}`,
-      properties: {
-        creator: contentData.creator,
-        contentType: contentData.contentType,
-        price: contentData.price.toString(),
-        isSubscription: contentData.isSubscription,
-        tags: contentData.tags || []
-      }
-    };
-    
-    // Add content specific properties
-    if (contentData.isSubscription) {
-      metadata.properties.subscriptionPrice = contentData.subscriptionPrice.toString();
-    }
-    
-    // Add animation_url for video and audio
-    if (contentData.contentType === 'video' || contentData.contentType === 'audio') {
-      metadata.animation_url = `ipfs://${contentCid}`;
-    }
-    
-    // Upload metadata to IPFS
-    const result = await uploadToIPFS(JSON.stringify(metadata));
-    return result.cid;
-  } catch (error) {
-    console.error("Error creating metadata:", error);
-    throw error;
-  }
-}
-
-/**
  * Get content by ID
  * @param {string} id - Content ID
  * @returns {Promise<Object|null>} - Content or null
