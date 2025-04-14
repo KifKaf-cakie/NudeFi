@@ -11,30 +11,11 @@ import {
   getCoinsNew,
   getProfile,
   getProfileBalances,
-  simulateBuy
+  simulateBuy,
+  simulateSell
 } from '@zoralabs/coins-sdk';
-import { createPublicClient, createWalletClient, http } from 'viem';
-import { base } from 'viem/chains';
-import { parseEther, formatEther } from 'viem';
-
-// Configure public client for Base chain
-const publicClient = createPublicClient({
-  chain: base,
-  transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
-});
-
-/**
- * Creates a wallet client with the provided account
- * @param {string} account - User's wallet address
- * @returns {WalletClient} - Viem wallet client
- */
-const getWalletClient = (account) => {
-  return createWalletClient({
-    account,
-    chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
-  });
-};
+import { parseEther } from 'viem';
+import { getWalletClient, getPublicClient } from '../utils/clientUtils';
 
 /**
  * Creates a coin for a creator using Zora Coins Protocol
@@ -44,22 +25,26 @@ const getWalletClient = (account) => {
  */
 export async function createCreatorCoin(params, account) {
   try {
-    const walletClient = getWalletClient(account);
+    const walletClient = await getWalletClient(account);
+    const publicClient = getPublicClient();
     
     const coinParams = {
       name: params.name,
       symbol: params.symbol,
       uri: params.uri,
       payoutRecipient: params.payoutRecipient || account,
-      platformReferrer: params.platformReferrer || process.env.NEXT_PUBLIC_PLATFORM_REFERRER || "0x0000000000000000000000000000000000000000",
+      platformReferrer: params.platformReferrer || process.env.NEXT_PUBLIC_PLATFORM_REFERRER || account,
       initialPurchaseWei: params.initialPurchaseWei || parseEther("0.01")
     };
     
+    console.log("Creating coin with params:", coinParams);
     const result = await createCoin(coinParams, walletClient, publicClient);
+    console.log("Coin creation result:", result);
+    
     return result;
   } catch (error) {
     console.error("Error creating coin:", error);
-    throw error;
+    throw new Error(`Failed to create creator coin: ${error.message}`);
   }
 }
 
@@ -71,14 +56,17 @@ export async function createCreatorCoin(params, account) {
  */
 export async function buyCoin(params, account) {
   try {
-    const walletClient = getWalletClient(account);
+    const walletClient = await getWalletClient(account);
+    const publicClient = getPublicClient();
     
     // First simulate the purchase to get proper parameters
+    console.log("Simulating buy with params:", params);
     const simulation = await simulateBuy({
       target: params.coinAddress,
       requestedOrderSize: parseEther(params.amount),
       publicClient,
     });
+    console.log("Buy simulation result:", simulation);
     
     // Execute the trade
     const result = await tradeCoin({
@@ -88,14 +76,15 @@ export async function buyCoin(params, account) {
         recipient: params.recipient || account,
         orderSize: simulation.orderSize,
         minAmountOut: simulation.amountOut * BigInt(95) / BigInt(100), // 5% slippage
-        tradeReferrer: params.tradeReferrer || process.env.NEXT_PUBLIC_TRADE_REFERRER || "0x0000000000000000000000000000000000000000",
+        tradeReferrer: params.tradeReferrer || process.env.NEXT_PUBLIC_TRADE_REFERRER || account,
       }
     }, walletClient, publicClient);
     
+    console.log("Coin buy result:", result);
     return result;
   } catch (error) {
     console.error("Error buying coin:", error);
-    throw error;
+    throw new Error(`Failed to buy coin: ${error.message}`);
   }
 }
 
@@ -107,23 +96,35 @@ export async function buyCoin(params, account) {
  */
 export async function sellCoin(params, account) {
   try {
-    const walletClient = getWalletClient(account);
+    const walletClient = await getWalletClient(account);
+    const publicClient = getPublicClient();
     
+    // First simulate the sale to get proper parameters
+    console.log("Simulating sell with params:", params);
+    const simulation = await simulateSell({
+      target: params.coinAddress,
+      tokenAmount: parseEther(params.amount),
+      publicClient,
+    });
+    console.log("Sell simulation result:", simulation);
+    
+    // Execute the trade
     const result = await tradeCoin({
       direction: "sell",
       target: params.coinAddress,
       args: {
         recipient: params.recipient || account,
         orderSize: parseEther(params.amount),
-        minAmountOut: params.minAmountOut || 0n,
-        tradeReferrer: params.tradeReferrer || process.env.NEXT_PUBLIC_TRADE_REFERRER || "0x0000000000000000000000000000000000000000",
+        minAmountOut: simulation.amountOut * BigInt(95) / BigInt(100), // 5% slippage
+        tradeReferrer: params.tradeReferrer || process.env.NEXT_PUBLIC_TRADE_REFERRER || account,
       }
     }, walletClient, publicClient);
     
+    console.log("Coin sell result:", result);
     return result;
   } catch (error) {
     console.error("Error selling coin:", error);
-    throw error;
+    throw new Error(`Failed to sell coin: ${error.message}`);
   }
 }
 
@@ -135,17 +136,20 @@ export async function sellCoin(params, account) {
  */
 export async function updateCoinMetadata(params, account) {
   try {
-    const walletClient = getWalletClient(account);
+    const walletClient = await getWalletClient(account);
+    const publicClient = getPublicClient();
     
+    console.log("Updating coin URI with params:", params);
     const result = await updateCoinURI({
       coin: params.coinAddress,
       newURI: params.newURI,
     }, walletClient, publicClient);
     
+    console.log("Coin URI update result:", result);
     return result;
   } catch (error) {
     console.error("Error updating coin metadata:", error);
-    throw error;
+    throw new Error(`Failed to update coin metadata: ${error.message}`);
   }
 }
 
@@ -157,6 +161,7 @@ export async function updateCoinMetadata(params, account) {
  */
 export async function fetchCoinDetails(coinAddress, chainId = 8453) {
   try {
+    console.log(`Fetching coin details for ${coinAddress}`);
     const response = await getCoin({
       address: coinAddress,
       chain: chainId,
@@ -165,7 +170,7 @@ export async function fetchCoinDetails(coinAddress, chainId = 8453) {
     return response.data?.zora20Token;
   } catch (error) {
     console.error("Error fetching coin details:", error);
-    throw error;
+    throw new Error(`Failed to fetch coin details: ${error.message}`);
   }
 }
 
@@ -177,6 +182,7 @@ export async function fetchCoinDetails(coinAddress, chainId = 8453) {
  */
 export async function fetchCoins(coinAddresses, chainId = 8453) {
   try {
+    console.log(`Fetching details for ${coinAddresses.length} coins`);
     const response = await getCoins({
       coinAddresses,
       chainId,
@@ -185,7 +191,7 @@ export async function fetchCoins(coinAddresses, chainId = 8453) {
     return response.data?.zora20Tokens;
   } catch (error) {
     console.error("Error fetching coins:", error);
-    throw error;
+    throw new Error(`Failed to fetch coins: ${error.message}`);
   }
 }
 
@@ -197,6 +203,7 @@ export async function fetchCoins(coinAddresses, chainId = 8453) {
  */
 export async function fetchCoinComments(coinAddress, options = {}) {
   try {
+    console.log(`Fetching comments for coin ${coinAddress}`);
     const response = await getCoinComments({
       address: coinAddress,
       chain: options.chainId || 8453,
@@ -207,7 +214,7 @@ export async function fetchCoinComments(coinAddress, options = {}) {
     return response.data?.zora20Token?.zoraComments;
   } catch (error) {
     console.error("Error fetching coin comments:", error);
-    throw error;
+    throw new Error(`Failed to fetch coin comments: ${error.message}`);
   }
 }
 
@@ -219,6 +226,7 @@ export async function fetchCoinComments(coinAddress, options = {}) {
  */
 export async function fetchTrendingCoins(limit = 10, after) {
   try {
+    console.log(`Fetching top ${limit} trending coins`);
     const response = await getCoinsTopGainers({
       count: limit,
       after,
@@ -227,7 +235,7 @@ export async function fetchTrendingCoins(limit = 10, after) {
     return response.data?.exploreList;
   } catch (error) {
     console.error("Error fetching trending coins:", error);
-    throw error;
+    throw new Error(`Failed to fetch trending coins: ${error.message}`);
   }
 }
 
@@ -239,6 +247,7 @@ export async function fetchTrendingCoins(limit = 10, after) {
  */
 export async function fetchTopVolumeCoins(limit = 10, after) {
   try {
+    console.log(`Fetching top ${limit} volume coins`);
     const response = await getCoinsTopVolume24h({
       count: limit,
       after,
@@ -247,7 +256,7 @@ export async function fetchTopVolumeCoins(limit = 10, after) {
     return response.data?.exploreList;
   } catch (error) {
     console.error("Error fetching top volume coins:", error);
-    throw error;
+    throw new Error(`Failed to fetch top volume coins: ${error.message}`);
   }
 }
 
@@ -259,6 +268,7 @@ export async function fetchTopVolumeCoins(limit = 10, after) {
  */
 export async function fetchMostValuableCoins(limit = 10, after) {
   try {
+    console.log(`Fetching top ${limit} most valuable coins`);
     const response = await getCoinsMostValuable({
       count: limit,
       after,
@@ -267,7 +277,7 @@ export async function fetchMostValuableCoins(limit = 10, after) {
     return response.data?.exploreList;
   } catch (error) {
     console.error("Error fetching most valuable coins:", error);
-    throw error;
+    throw new Error(`Failed to fetch most valuable coins: ${error.message}`);
   }
 }
 
@@ -279,6 +289,7 @@ export async function fetchMostValuableCoins(limit = 10, after) {
  */
 export async function fetchNewCoins(limit = 10, after) {
   try {
+    console.log(`Fetching ${limit} newest coins`);
     const response = await getCoinsNew({
       count: limit,
       after,
@@ -287,7 +298,7 @@ export async function fetchNewCoins(limit = 10, after) {
     return response.data?.exploreList;
   } catch (error) {
     console.error("Error fetching new coins:", error);
-    throw error;
+    throw new Error(`Failed to fetch new coins: ${error.message}`);
   }
 }
 
@@ -298,6 +309,7 @@ export async function fetchNewCoins(limit = 10, after) {
  */
 export async function fetchUserProfile(identifier) {
   try {
+    console.log(`Fetching profile for ${identifier}`);
     const response = await getProfile({
       identifier,
     });
@@ -305,7 +317,7 @@ export async function fetchUserProfile(identifier) {
     return response.data?.profile;
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    throw error;
+    throw new Error(`Failed to fetch user profile: ${error.message}`);
   }
 }
 
@@ -317,6 +329,7 @@ export async function fetchUserProfile(identifier) {
  */
 export async function fetchUserCoinBalances(identifier, options = {}) {
   try {
+    console.log(`Fetching coin balances for ${identifier}`);
     const response = await getProfileBalances({
       identifier,
       count: options.count || 20,
@@ -326,6 +339,6 @@ export async function fetchUserCoinBalances(identifier, options = {}) {
     return response.data?.profile?.coinBalances;
   } catch (error) {
     console.error("Error fetching user coin balances:", error);
-    throw error;
+    throw new Error(`Failed to fetch user coin balances: ${error.message}`);
   }
 }
