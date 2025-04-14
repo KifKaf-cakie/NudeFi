@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { useAccount, useDisconnect } from 'wagmi';
 import { base } from 'viem/chains';
 import Header from '../components/Header';
-import { fetchUserProfile, fetchUserCoinBalances } from '@/services/zoraService';
+import { fetchUserProfile, fetchUserCoinBalances } from '../services/zoraService';
 import { Heart, Edit, Copy, Link, MessageCircle, DollarSign, Image, Video, AlertTriangle } from 'lucide-react';
 
 const mockProfileData = {
