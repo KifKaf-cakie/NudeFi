@@ -2,6 +2,7 @@ import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { Heart, Lock, DollarSign, BarChart2, TrendingUp, Gift } from 'lucide-react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { ConnectKitButton } from 'connectkit'
 import Header from './Header'
 
 export default function EnhancedNudeFiLanding() {
@@ -515,17 +516,25 @@ const featuredContent = [
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           {isConnected ? (
             <Link href="/create">
-              <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse">
+              <a className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105">
                 Create Content
               </a>
             </Link>
           ) : (
-            <button
-              onClick={() => connect({ connector: connectors[0] })}
-              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105 animate-pulse"
-            >
-              Connect Wallet to Start
-            </button>
+            <div className="flex-1 max-w-md mx-auto">
+              <ConnectKitButton.Custom>
+                {({ isConnected, show }) => {
+                  return (
+                    <button
+                      onClick={show}
+                      className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-500/20 transform transition hover:scale-105"
+                    >
+                      Connect Wallet to Start
+                    </button>
+                  );
+                }}
+              </ConnectKitButton.Custom>
+            </div>
           )}
 
           <Link href="/explore">
