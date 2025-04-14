@@ -1,5 +1,5 @@
 import { 
-  createCoin, 
+  createCoin as createCoinSDK, 
   tradeCoin, 
   updateCoinURI, 
   getCoin, 
