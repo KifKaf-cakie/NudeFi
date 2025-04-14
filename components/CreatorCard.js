@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { tradeCoin } from '@zoralabs/coins-sdk';
-import { parseEther } from 'viem';
+import { buyCoin } from '../services/zoraService';
 
 export default function CreatorCard({ creator }) {
   const { address, isConnected } = useAccount();
@@ -11,6 +10,7 @@ export default function CreatorCard({ creator }) {
   const [error, setError] = useState('');
   const [purchaseAmount, setPurchaseAmount] = useState('0.01');
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   
   // Format address for display
   const formatAddress = (addr) => {
@@ -29,16 +29,25 @@ export default function CreatorCard({ creator }) {
       setIsLoading(true);
       setError('');
       
-      // In a real implementation, this would use the Zora SDK to buy the coin
-      // This is a simplified mock implementation
-      console.log(`Buying ${purchaseAmount} ETH of ${creator.coinSymbol} coins`);
+      // Use the Zora SDK through our service to buy the coin
+      const buyParams = {
+        coinAddress: creator.coinAddress,
+        amount: purchaseAmount,
+        recipient: address,
+      };
       
-      // Mock successful transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await buyCoin(buyParams, address);
+      console.log('Buy transaction result:', result);
       
-      // Close modal after successful purchase
-      setShowBuyModal(false);
-      setPurchaseAmount('0.01');
+      // Show success state
+      setPurchaseSuccess(true);
+      
+      // Reset after delay
+      setTimeout(() => {
+        setShowBuyModal(false);
+        setPurchaseAmount('0.01');
+        setPurchaseSuccess(false);
+      }, 3000);
       
     } catch (err) {
       console.error("Error buying creator coin:", err);
@@ -111,73 +120,103 @@ export default function CreatorCard({ creator }) {
       {showBuyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-2xl font-bold mb-4">Buy ${creator.coinSymbol} Coins</h3>
-            
-            <div className="mb-6">
-              <p className="text-gray-300 mb-2">
-                Support <span className="font-bold">{creator.name}</span> by buying their creator coins.
-              </p>
-              <p className="text-sm text-gray-400 mb-4">
-                Creator coins give you benefits like subscription access to exclusive content and voting rights in creator decisions.
-              </p>
-              
-              <div className="mb-4">
-                <label className="block mb-2">Amount to Spend (ETH)</label>
-                <div className="flex">
-                  <input 
-                    type="number"
-                    value={purchaseAmount}
-                    onChange={(e) => setPurchaseAmount(e.target.value)}
-                    step="0.01"
-                    min="0.01"
-                    className="flex-1 bg-gray-700 p-3 rounded-l"
-                    placeholder="0.01"
-                  />
-                  <div className="bg-gray-600 px-4 py-3 rounded-r flex items-center">
-                    ETH
+            {purchaseSuccess ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Purchase Successful!</h3>
+                <p className="text-gray-300 mb-6">
+                  You've successfully purchased ${creator.coinSymbol} tokens.
+                </p>
+                <button
+                  className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+                  onClick={() => setShowBuyModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-2xl font-bold mb-4">Buy ${creator.coinSymbol} Coins</h3>
+                
+                <div className="mb-6">
+                  <p className="text-gray-300 mb-2">
+                    Support <span className="font-bold">{creator.name}</span> by buying their creator coins.
+                  </p>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Creator coins give you benefits like subscription access to exclusive content and voting rights in creator decisions.
+                  </p>
+                  
+                  <div className="mb-4">
+                    <label className="block mb-2">Amount to Spend (ETH)</label>
+                    <div className="flex">
+                      <input 
+                        type="number"
+                        value={purchaseAmount}
+                        onChange={(e) => setPurchaseAmount(e.target.value)}
+                        step="0.01"
+                        min="0.01"
+                        className="flex-1 bg-gray-700 p-3 rounded-l"
+                        placeholder="0.01"
+                      />
+                      <div className="bg-gray-600 px-4 py-3 rounded-r flex items-center">
+                        ETH
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-700 p-4 rounded mb-4">
+                    <div className="flex justify-between mb-2">
+                      <span>Current Price:</span>
+                      <span>{creator.coinPrice} ETH per coin</span>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <span>Estimated Coins:</span>
+                      <span className="font-bold">
+                        {purchaseAmount && creator.coinPrice ? 
+                          (parseFloat(purchaseAmount) / parseFloat(creator.coinPrice)).toFixed(2) : 
+                          '0'
+                        }
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="bg-gray-700 p-4 rounded mb-4">
-                <div className="flex justify-between mb-2">
-                  <span>Current Price:</span>
-                  <span>{creator.coinPrice} ETH per coin</span>
+                
+                {error && (
+                  <div className="bg-red-600 bg-opacity-25 border border-red-400 text-red-100 p-3 rounded mb-4">
+                    {error}
+                  </div>
+                )}
+                
+                <div className="flex justify-end">
+                  <button
+                    className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2"
+                    onClick={() => setShowBuyModal(false)}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleBuyCoin}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                      </div>
+                    ) : 'Buy Coins'}
+                  </button>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span>Estimated Coins:</span>
-                  <span className="font-bold">
-                    {purchaseAmount && creator.coinPrice ? 
-                      (parseFloat(purchaseAmount) / parseFloat(creator.coinPrice)).toFixed(2) : 
-                      '0'
-                    }
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {error && (
-              <div className="bg-red-600 bg-opacity-25 border border-red-400 text-red-100 p-3 rounded mb-4">
-                {error}
-              </div>
+              </>
             )}
-            
-            <div className="flex justify-end">
-              <button
-                className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2"
-                onClick={() => setShowBuyModal(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-              <button
-                className={`bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={handleBuyCoin}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processing...' : 'Buy Coins'}
-              </button>
-            </div>
           </div>
         </div>
       )}
