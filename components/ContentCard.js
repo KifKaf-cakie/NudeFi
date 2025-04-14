@@ -32,11 +32,11 @@ export default function ContentCard({ content, purchased = false }) {
       setIsLoading(true);
       setError('');
       
-      // Call mintContent service
-      const result = await mintContent(content.id, content.price);
+      // Call mintContent service which now uses the Zora SDK
+      const result = await mintContent(content.id, content.price, address);
+      console.log("Mint transaction result:", result);
       
       setPurchaseSuccess(true);
-      setShowModal(true);
       
       // Reset after 3 seconds
       setTimeout(() => {
@@ -51,51 +51,51 @@ export default function ContentCard({ content, purchased = false }) {
     }
   };
   
-const getContentPreview = () => {
-  if (content.contentType === 'image') {
-    return (
-      <img 
-        src={content.previewUrl || '/images/content/photo-content.png'} 
-        alt={content.title}
-        className="w-full h-48 object-cover rounded-t-lg"
-      />
-    );
-  } else if (content.contentType === 'video') {
-    return (
-      <div className="relative w-full h-48">
+  const getContentPreview = () => {
+    if (content.contentType === 'image') {
+      return (
         <img 
-          src={content.previewUrl || '/images/content/video-content.png'} 
+          src={content.previewUrl || '/images/content/photo-content.png'} 
           alt={content.title}
-          className="w-full h-full object-cover rounded-t-lg"
+          className="w-full h-48 object-cover rounded-t-lg"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-black bg-opacity-50 rounded-full p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      );
+    } else if (content.contentType === 'video') {
+      return (
+        <div className="relative w-full h-48">
+          <img 
+            src={content.previewUrl || '/images/content/video-content.png'} 
+            alt={content.title}
+            className="w-full h-full object-cover rounded-t-lg"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-black bg-opacity-50 rounded-full p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      );
+    } else if (content.contentType === 'audio') {
+      return (
+        <div className="relative w-full h-48">
+          <img 
+            src={content.previewUrl || '/images/content/audio-content.png'} 
+            alt={content.title}
+            className="w-full h-full object-cover rounded-t-lg"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-pink-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
           </div>
         </div>
-      </div>
-    );
-  } else if (content.contentType === 'audio') {
-    return (
-      <div className="relative w-full h-48">
-        <img 
-          src={content.previewUrl || '/images/content/audio-content.png'} 
-          alt={content.title}
-          className="w-full h-full object-cover rounded-t-lg"
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-pink-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-          </svg>
-        </div>
-      </div>
-    );
-  }
+      );
+    }
     return null;
-    }; 
+  }; 
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:transform hover:scale-102">
@@ -103,7 +103,7 @@ const getContentPreview = () => {
       <div className="relative">
         {getContentPreview()}
         <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-bold px-2 py-1 rounded">
-          {content.contentType.toUpperCase()}
+          {content.contentType?.toUpperCase()}
         </div>
         
         {content.isSubscription && (
