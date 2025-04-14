@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import Head from 'next/head';
 import { useAccount, useDisconnect } from 'wagmi';
+import { base } from 'viem/chains';
 import Header from '../components/Header';
+import { fetchUserProfile, fetchUserCoinBalances } from '@/services/zoraService';
 import { Heart, Edit, Copy, Link, MessageCircle, DollarSign, Image, Video, AlertTriangle } from 'lucide-react';
 
-// モックデータ
 const mockProfileData = {
   displayName: "Creative Creator",
   handle: "creativecreator",
@@ -59,7 +61,34 @@ const mockContent = [
 const ProfilePage = () => {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
-  const [profileData] = useState(mockProfileData);
+  
+  useEffect(() => {
+  const loadProfile = async () => {
+    if (!isConnected || !address) return;
+    try {
+      const user = await fetchUserProfile(address);
+      const balances = await fetchUserCoinBalances(address);
+  setProfileData((prev) => ({
+    ...prev,
+    handle: user?.handle || prev.handle,
+    bio: user?.bio || prev.bio,
+    linkedWallets: [
+    ...(user?.linkedWallets || []),
+    {
+      walletType: base.id === 8453 ? 'Base' : 'Ethereum',
+      walletAddress: address,
+    },
+  ],
+  }));
+
+    } catch (err) {
+      console.error('Failed to load profile from Zora SDK:', err);
+    }
+  };
+  loadProfile();
+}, [isConnected, address]);
+
+  const [profileData, setProfileData] = useState(mockProfileData);
   const [comments] = useState(mockComments);
   const [content] = useState(mockContent);
   const [activeTab, setActiveTab] = useState('content');
@@ -76,7 +105,7 @@ const ProfilePage = () => {
         <meta name="description" content="Creator profile on NudeFi platform" />
       </Head>
 
-      <Header isConnected={isConnected} address={address} disconnect={disconnect} />
+      <Header isConnected={isConnected} address={address} />
 
       <main className="container mx-auto px-4 pt-24 pb-12">
         {/* プロフィールカード */}
