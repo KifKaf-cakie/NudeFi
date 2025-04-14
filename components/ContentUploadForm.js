@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { formatEther } from 'viem';
+import { parseEther } from 'viem';
 import { createContent } from '../services/contentService';
+import { useZoraCoins } from '../hooks/useZoraCoins';
 
 export default function ContentUploadForm({ onSubmit, onSuccess }) {
   const { address } = useAccount();
+  const { 
+    loading: coinsLoading, 
+    error: coinsError, 
+    getCurrentUserCoinBalances 
+  } = useZoraCoins();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -23,6 +29,35 @@ export default function ContentUploadForm({ onSubmit, onSuccess }) {
   const [successMessage, setSuccessMessage] = useState('');
   const [ageVerification, setAgeVerification] = useState(false);
   const [contentOwnership, setContentOwnership] = useState(false);
+  const [existingCoin, setExistingCoin] = useState(null);
+  
+  // Check if user already has a creator coin
+  useEffect(() => {
+    if (!address) return;
+    
+    async function checkExistingCoin() {
+      try {
+        const balances = await getCurrentUserCoinBalances();
+        if (balances && balances.edges && balances.edges.length > 0) {
+          // User has at least one coin, use the first one
+          const firstCoin = balances.edges[0].node.token;
+          setExistingCoin({
+            address: firstCoin.address,
+            name: firstCoin.name,
+            symbol: firstCoin.symbol
+          });
+          
+          // Pre-fill the form
+          setCoinName(firstCoin.name);
+          setCoinSymbol(firstCoin.symbol);
+        }
+      } catch (error) {
+        console.error("Error checking existing coins:", error);
+      }
+    }
+    
+    checkExistingCoin();
+  }, [address, getCurrentUserCoinBalances]);
   
   // Handle file selection
   const handleFileChange = (e) => {
@@ -109,18 +144,22 @@ export default function ContentUploadForm({ onSubmit, onSuccess }) {
         price,
         isSubscription,
         subscriptionPrice: isSubscription ? subscriptionPrice : '0',
-        coinName: coinName || `${title} Fan Token`,
-        coinSymbol: generatedSymbol,
+        coinName: existingCoin ? existingCoin.name : (coinName || `${title} Fan Token`),
+        coinSymbol: existingCoin ? existingCoin.symbol : generatedSymbol,
         tags,
         creator: address,
         file
       };
       
-      // Create content using Zora Coins SDK via our service
+      // Create content using our updated service which properly integrates Zora Coins SDK
       const result = await createContent(contentData, address);
       
       // Show success message
-      setSuccessMessage('Content created successfully! Your NFT is being processed and will be available soon.');
+      setSuccessMessage(`
+        Content created successfully! 
+        ${existingCoin ? 'Using your existing creator coin' : 'Created a new creator coin'}: $${contentData.coinSymbol}
+        Your NFT is being processed and will be available soon.
+      `);
       
       // Reset form after success
       setTimeout(() => {
@@ -129,8 +168,10 @@ export default function ContentUploadForm({ onSubmit, onSuccess }) {
         setPrice('0.01');
         setIsSubscription(false);
         setSubscriptionPrice('100');
-        setCoinName('');
-        setCoinSymbol('');
+        if (!existingCoin) {
+          setCoinName('');
+          setCoinSymbol('');
+        }
         setFile(null);
         setPreviewUrl('');
         setTags([]);
@@ -166,6 +207,18 @@ export default function ContentUploadForm({ onSubmit, onSuccess }) {
       {successMessage && (
         <div className="bg-green-600 text-white p-4 rounded mb-6">
           {successMessage}
+        </div>
+      )}
+      
+      {existingCoin && (
+        <div className="bg-blue-600/30 text-white p-4 rounded mb-6 border border-blue-500/50">
+          <div className="flex items-center">
+            <div className="mr-2 text-blue-300">ℹ️</div>
+            <div>
+              <p className="font-medium">Using your existing creator coin: ${existingCoin.symbol}</p>
+              <p className="text-sm mt-1">Your content will be linked to your existing creator coin.</p>
+            </div>
+          </div>
         </div>
       )}
       
@@ -330,34 +383,38 @@ export default function ContentUploadForm({ onSubmit, onSuccess }) {
               </div>
             )}
             
-            <div>
-              <label className="block mb-1">Creator Coin Name (optional)</label>
-              <input 
-                type="text"
-                value={coinName}
-                onChange={(e) => setCoinName(e.target.value)}
-                className="w-full bg-gray-700 p-3 rounded"
-                placeholder="Leave blank to use default"
-              />
-              <p className="text-sm text-gray-400 mt-1">
-                If you've already created content, your existing coin will be used
-              </p>
-            </div>
-            
-            <div>
-              <label className="block mb-1">Coin Symbol (optional)</label>
-              <input 
-                type="text"
-                value={coinSymbol}
-                onChange={(e) => setCoinSymbol(e.target.value.toUpperCase())}
-                className="w-full bg-gray-700 p-3 rounded"
-                placeholder="e.g. SEXY"
-                maxLength={5}
-              />
-              <p className="text-sm text-gray-400 mt-1">
-                Maximum 5 characters. Will be generated from title if not provided.
-              </p>
-            </div>
+            {!existingCoin && (
+              <>
+                <div>
+                  <label className="block mb-1">Creator Coin Name (optional)</label>
+                  <input 
+                    type="text"
+                    value={coinName}
+                    onChange={(e) => setCoinName(e.target.value)}
+                    className="w-full bg-gray-700 p-3 rounded"
+                    placeholder="Leave blank to use default"
+                  />
+                  <p className="text-sm text-gray-400 mt-1">
+                    This name will be used for your creator coin that will be created with Zora Coins Protocol
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block mb-1">Coin Symbol (optional)</label>
+                  <input 
+                    type="text"
+                    value={coinSymbol}
+                    onChange={(e) => setCoinSymbol(e.target.value.toUpperCase())}
+                    className="w-full bg-gray-700 p-3 rounded"
+                    placeholder="e.g. SEXY"
+                    maxLength={5}
+                  />
+                  <p className="text-sm text-gray-400 mt-1">
+                    Maximum 5 characters. Will be generated from title if not provided.
+                  </p>
+                </div>
+              </>
+            )}
             
             {previewUrl && (
               <div>
