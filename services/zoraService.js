@@ -50,7 +50,7 @@ export async function createCreatorCoin(params, account) {
     };
     
     console.log("Creating coin with params:", coinParams);
-    const result = await createCoin(coinParams, walletClient, publicClient);
+    const result = await createCoinSDK(coinParams, walletClient, publicClient);
     console.log("Coin creation result:", result);
     
     return result;
