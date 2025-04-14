@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { useAccount } from 'wagmi';
-import { uploadToIPFS, uploadMetadataToIPFS } from '@/utils/ipfsUtils';
-import { createCreatorCoin } from '@/services/zoraService';
+import { uploadToIPFS, uploadMetadataToIPFS } from ''../utils/ipfsUtils';
+import { createCreatorCoin } from ''../services/zoraService';
 
 export default function CreatePage() {
   const { address, isConnected } = useAccount();
