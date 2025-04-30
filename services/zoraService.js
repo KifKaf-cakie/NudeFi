@@ -15,10 +15,14 @@ import {
 } from '@zoralabs/coins-sdk';
 import { parseEther } from 'viem';
 import { getWalletClient, getPublicClient } from '../utils/clientUtils';
+import { CHAIN_CONFIG } from '../config/chains';
+
+// Base Sepolia Chain ID
+const CHAIN_ID = 84532;
 
 export async function simulateSell(params) {
   try {
-    console.log("シミュレーションセール", params);
+    console.log("Simulating sell", params);
     return {
       amountOut: params.tokenAmount * BigInt(90) / BigInt(100),
       orderSize: params.tokenAmount
@@ -45,7 +49,7 @@ export async function createCreatorCoin(params, account) {
       symbol: params.symbol,
       uri: params.uri,
       payoutRecipient: params.payoutRecipient || account,
-      platformReferrer: params.platformReferrer || process.env.NEXT_PUBLIC_PLATFORM_REFERRER || account,
+      platformReferrer: params.platformReferrer || process.env.NEXT_PUBLIC_PLATFORM_REFERRER || CHAIN_CONFIG.APP_CONFIG?.platformReferrer || account,
       initialPurchaseWei: params.initialPurchaseWei || parseEther("0.01")
     };
     
@@ -168,10 +172,10 @@ export async function updateCoinMetadata(params, account) {
 /**
  * Fetch coin details
  * @param {string} coinAddress - Coin contract address
- * @param {number} chainId - Chain ID (defaults to Base)
+ * @param {number} chainId - Chain ID (defaults to Base Sepolia)
  * @returns {Promise<Object>} - Coin data
  */
-export async function fetchCoinDetails(coinAddress, chainId = 8453) {
+export async function fetchCoinDetails(coinAddress, chainId = CHAIN_ID) {
   try {
     console.log(`Fetching coin details for ${coinAddress}`);
     const response = await getCoin({
@@ -189,10 +193,10 @@ export async function fetchCoinDetails(coinAddress, chainId = 8453) {
 /**
  * Fetch multiple coins
  * @param {Array<string>} coinAddresses - Array of coin addresses
- * @param {number} chainId - Chain ID (defaults to Base)
+ * @param {number} chainId - Chain ID (defaults to Base Sepolia)
  * @returns {Promise<Array>} - Array of coin data
  */
-export async function fetchCoins(coinAddresses, chainId = 8453) {
+export async function fetchCoins(coinAddresses, chainId = CHAIN_ID) {
   try {
     console.log(`Fetching details for ${coinAddresses.length} coins`);
     const response = await getCoins({
@@ -218,7 +222,7 @@ export async function fetchCoinComments(coinAddress, options = {}) {
     console.log(`Fetching comments for coin ${coinAddress}`);
     const response = await getCoinComments({
       address: coinAddress,
-      chain: options.chainId || 8453,
+      chain: options.chainId || CHAIN_ID,
       after: options.after,
       count: options.count || 20,
     });
