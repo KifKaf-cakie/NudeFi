@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { WagmiConfig, createConfig } from 'wagmi'
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit'
-import { base } from 'viem/chains'
+import { baseSepolia } from 'viem/chains'
 import { setApiKey } from '@zoralabs/coins-sdk'
 import '../styles/globals.css'
 
@@ -18,7 +18,7 @@ const config = createConfig(
     appUrl: "https://nudefi.xyz",
     alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_ID,
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-    chains: [base],
+    chains: [baseSepolia],
   })
 )
 
