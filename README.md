@@ -57,6 +57,7 @@ NudeFi makes extensive use of Zora's Coins Protocol to power its economy:
 - Node.js (v16+)
 - NPM or Yarn
 - Metamask or another Web3 wallet with Base chain support
+- Some ETH on Base chain for transactions
 
 ### Installation
 
@@ -102,6 +103,47 @@ This project is currently in active development. Key features implemented:
 - ⏳ Community governance (in progress)
 - ⏳ Enhanced AI features (in progress)
 
+## 🔮 Deployment Options
+
+### Base Mainnet Deployment
+For production deployment, you can deploy directly to Base Mainnet by configuring your environment variables to point to Base Mainnet RPC endpoints.
+
+### Base Sepolia Testnet Deployment
+For testing and development, you can deploy to Base Sepolia testnet:
+
+1. Configure your wallet with Base Sepolia:
+   - Network Name: Base Sepolia
+   - RPC URL: https://sepolia.base.org
+   - Chain ID: 84532
+   - Currency Symbol: ETH
+
+2. Get testnet ETH from a faucet like [Base Sepolia Faucet](https://www.coinbase.com/faucets/base-sepolia-faucet)
+
+3. Update your environment variables:
+   ```
+   NEXT_PUBLIC_BASE_RPC_URL=https://sepolia.base.org
+   ```
+
+4. Deploy your contracts to Base Sepolia:
+   ```bash
+   npx hardhat run scripts/deploy.js --network baseSepolia
+   ```
+
+### Deploying the Frontend
+You can deploy the frontend to:
+
+#### Vercel
+1. Push your code to GitHub
+2. Connect your GitHub repository to Vercel
+3. Configure environment variables in Vercel dashboard
+4. Deploy
+
+#### Render
+1. Push your code to GitHub
+2. Connect your GitHub repository to Render
+3. Use the `render.yaml` file in the repository for configuration
+4. Deploy
+
 ## 🔮 Future Plans
 
 - Mobile application for iOS and Android
@@ -116,10 +158,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgements
-
-- [Zora](https://zora.co/) for the Coins Protocol
-- [Base Chain](https://base.org/) for the L2 infrastructure
-- [Anthropic](https://www.anthropic.com/) for AI assistance
+MIT
