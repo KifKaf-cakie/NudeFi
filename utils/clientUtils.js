@@ -1,14 +1,15 @@
 import { createPublicClient, createWalletClient, http } from 'viem';
-import { base } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
+import { CHAIN_CONFIG } from '../config/chains';
 
 /**
- * Get a viem public client for the Base chain
+ * Get a viem public client for the Base Sepolia chain
  * @returns {import('viem').PublicClient} Public client
  */
 export function getPublicClient() {
   return createPublicClient({
-    chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
+    chain: baseSepolia,
+    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || CHAIN_CONFIG.rpcUrl),
   });
 }
 
@@ -22,8 +23,8 @@ export async function getWalletClient(account) {
   // For this implementation, we'll create a wallet client with their address
   return createWalletClient({
     account,
-    chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
+    chain: baseSepolia,
+    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || CHAIN_CONFIG.rpcUrl),
   });
 }
 
