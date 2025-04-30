@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: nudefi
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_BASE_RPC_URL
+        value: https://sepolia.base.org
+      - key: NEXT_PUBLIC_CHAIN_ID
+        value: 84532
+      - key: NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+        sync: false
+      - key: NEXT_PUBLIC_PLATFORM_REFERRER
+        sync: false
+      - key: NEXT_PUBLIC_TRADE_REFERRER
+        sync: false
+      - key: NEXT_PUBLIC_IPFS_GATEWAY_URL
+        value: https://ipfs.io/ipfs/
+      - key: NEXT_PUBLIC_MARKETPLACE_ADDRESS
+        sync: false
+      - key: NEXT_PUBLIC_GOVERNANCE_ADDRESS
+        sync: false
+      - key: NEXT_PUBLIC_ZORA_API_KEY
+        sync: false
